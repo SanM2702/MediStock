@@ -78,6 +78,8 @@ def seed_database(reset=False):
             usuario = Usuario(
                 **u_data,
                 hashed_password=hash_password(password),
+                activo=True,  # Los usuarios de seed comienzan activados
+                codigo_activacion=None,
             )
             db.add(usuario)
             db.flush() # Para obtener el ID

@@ -212,7 +212,7 @@ export default function MiEPS() {
           <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed text-center">
             La información presentada es de carácter informativo y orientativo.
             Para confirmación oficial, consulte directamente con su EPS o farmacia autorizada.
-            MediStock QR no es operado por ninguna EPS colombiana.
+            MediStock no es operado por ninguna EPS colombiana.
           </p>
         </div>
       </div>

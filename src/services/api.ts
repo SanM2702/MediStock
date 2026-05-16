@@ -13,15 +13,35 @@ async function fetcher<T>(
   method: string = "GET",
   body?: any
 ): Promise<T> {
+  const hadToken = !!localStorage.getItem("medistock_token");
   const response = await fetch(`${BASE_URL}${endpoint}`, {
     method,
     headers: getHeaders(),
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
 
+  if (response.status === 401 && hadToken) {
+    localStorage.removeItem("medistock_token");
+    localStorage.removeItem("user");
+    if (window.location.pathname !== "/") {
+      window.location.href = "/";
+    }
+    throw new Error("Sesión expirada. Por favor inicia sesión nuevamente.");
+  }
+
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || "Error en la petición");
+    
+    // Manejo especial para errores de validación Pydantic (422)
+    if (response.status === 422 && Array.isArray(errorData.detail)) {
+      const validationErrors = errorData.detail
+        .map((err: any) => `${err.loc?.[1] || 'campo'}: ${err.msg}`)
+        .join('; ');
+      console.error('Errores de validación:', validationErrors);
+      throw new Error(validationErrors);
+    }
+    
+    throw new Error(errorData.detail || `Error ${response.status} en la petición`);
   }
 
   return response.json();
@@ -63,11 +83,77 @@ export const api = {
     return fetcher<any>(`/auth/login?${params.toString()}`, "POST");
   },
 
+  registro: (datos: {
+    cedula: string;
+    nombre: string;
+    apellido: string;
+    email: string;
+    password: string;
+    eps: string;
+    telefono?: string;
+  }) => {
+    return fetcher<any>(`/auth/registro`, "POST", datos);
+  },
+
+  activarCuenta: (token: string) => {
+    return fetcher<any>(`/auth/activar/${encodeURIComponent(token)}`, "POST");
+  },
+
+  forgotPassword: (email: string) => {
+    return fetcher<any>(`/auth/forgot-password`, "POST", { email });
+  },
+
+  resetPassword: (token: string, password: string) => {
+    return fetcher<any>(`/auth/reset-password`, "POST", { token, password });
+  },
+
   getNetworkMetrics: () => {
     return fetcher<any>("/network/metrics");
   },
 
   getNetworkHistory: () => {
     return fetcher<any[]>("/network/history");
+  },
+
+  getUsuarios: (filtros?: { rol?: string; eps?: string; activo?: boolean }) => {
+    const params = new URLSearchParams();
+    if (filtros?.rol) params.append("rol", filtros.rol);
+    if (filtros?.eps) params.append("eps", filtros.eps);
+    if (filtros?.activo !== undefined) params.append("activo", String(filtros.activo));
+
+    const query = params.toString();
+    return fetcher<any[]>(`/usuarios${query ? `?${query}` : ""}`);
+  },
+
+  getUsuario: (id: string | number) => {
+    return fetcher<any>(`/usuarios/${id}`);
+  },
+
+  crearUsuario: (datos: {
+    cedula: string;
+    nombre: string;
+    apellido: string;
+    email: string;
+    password: string;
+    rol: string;
+    eps?: string;
+  }) => {
+    return fetcher<any>(`/usuarios`, "POST", datos);
+  },
+
+  actualizarUsuario: (id: string | number, datos: {
+    nombre?: string;
+    apellido?: string;
+    email?: string;
+    eps?: string;
+    rol?: string;
+    activo?: boolean;
+    password?: string;
+  }) => {
+    return fetcher<any>(`/usuarios/${id}`, "PUT", datos);
+  },
+
+  eliminarUsuario: (id: string | number) => {
+    return fetcher<any>(`/usuarios/${id}`, "DELETE");
   },
 };

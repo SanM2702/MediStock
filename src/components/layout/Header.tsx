@@ -51,7 +51,7 @@ export default function Header({ onLoginClick, notificaciones = 3 }: HeaderProps
                 MediStock
               </span>
               <span className="text-[10px] text-primary-500 dark:text-emerald-400 font-semibold leading-none">
-                QR · Sabana Centro
+                Sabana Centro
               </span>
             </div>
           </button>
