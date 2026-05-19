@@ -21,6 +21,7 @@ class Usuario(Base):
     email: Mapped[str] = mapped_column(String(100), unique=True, index=True)
     rol: Mapped[str] = mapped_column(String(20))  # paciente, farmaceutico, admin
     eps: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    telefono: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
     activo: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     codigo_activacion: Mapped[Optional[str]] = mapped_column(String(20), nullable=True, unique=True, index=True)

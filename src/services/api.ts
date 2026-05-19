@@ -107,6 +107,29 @@ export const api = {
     return fetcher<any>(`/auth/reset-password`, "POST", { token, password });
   },
 
+  // ==================== PERFIL DEL USUARIO ====================
+
+  getPerfil: () => {
+    return fetcher<any>(`/usuarios/me`);
+  },
+
+  actualizarPerfil: (datos: {
+    nombre?: string;
+    apellido?: string;
+    email?: string;
+    eps?: string;
+    telefono?: string;
+  }) => {
+    return fetcher<any>(`/usuarios/me`, "PUT", datos);
+  },
+
+  cambiarContrasena: (passwordActual: string, passwordNueva: string) => {
+    return fetcher<any>(`/usuarios/me/password`, "PUT", {
+      password_actual: passwordActual,
+      password_nueva: passwordNueva,
+    });
+  },
+
   getNetworkMetrics: () => {
     return fetcher<any>("/network/metrics");
   },

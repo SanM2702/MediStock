@@ -28,6 +28,7 @@ import Buscar    from './pages/Buscar';
 import Farmacias from './pages/Farmacias';
 import MiEPS     from './pages/MiEPS';
 import Historial from './pages/Historial';
+import ProfilePage from './pages/ProfilePage';
 import Usuarios  from './pages/Usuarios';
 import Admin     from './pages/Admin';
 import RedeAdmin from './pages/RedeAdmin';
@@ -121,6 +122,7 @@ function AppLayout() {
             <Route path="/farmacias" element={<Farmacias />} />
             <Route path="/mi-eps"    element={<MiEPS />} />
             <Route path="/historial" element={<Historial />} />
+            <Route path="/perfil"    element={<ProfilePage />} />
             <Route 
               path="/usuarios" 
               element={isAdmin() ? <Usuarios /> : <Navigate to="/" replace />} 

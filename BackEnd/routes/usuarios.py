@@ -5,8 +5,14 @@ from typing import List, Optional
 
 from database import get_db
 from models import Usuario
-from schemas import UsuarioResponse, UsuarioCreate, UsuarioUpdate
-from auth import get_current_user, hash_password
+from schemas import (
+    UsuarioResponse,
+    UsuarioCreate,
+    UsuarioUpdate,
+    UsuarioProfileUpdate,
+    ChangePasswordRequest,
+)
+from auth import get_current_user, hash_password, verify_password
 
 router = APIRouter(
     prefix="/api/usuarios",
@@ -39,6 +45,118 @@ def _require_admin(
     return usuario_actual
 
 
+# ==================== ENDPOINTS DE PERFIL DEL USUARIO ====================
+
+@router.get("/me", response_model=UsuarioResponse)
+def obtener_perfil(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+):
+    """
+    Obtiene el perfil del usuario autenticado.
+    GET /api/usuarios/me
+    """
+    try:
+        usuario = get_current_user(token=credentials.credentials, db=db)
+    except HTTPException:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido o expirado",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    return usuario
+
+
+@router.put("/me", response_model=UsuarioResponse)
+def actualizar_perfil(
+    datos: UsuarioProfileUpdate,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+):
+    """
+    Actualiza el perfil del usuario autenticado.
+    El usuario solo puede actualizar: nombre, apellido, email, eps, telefono.
+    PUT /api/usuarios/me
+    """
+    try:
+        usuario = get_current_user(token=credentials.credentials, db=db)
+    except HTTPException:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido o expirado",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    update_data = datos.model_dump(exclude_unset=True)
+    
+    # Validar email único si se está cambiando
+    if "email" in update_data:
+        email_existente = db.query(Usuario).filter(
+            Usuario.email == update_data["email"],
+            Usuario.id != usuario.id,
+        ).first()
+        if email_existente:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Ya existe un usuario con ese email",
+            )
+    
+    for campo, valor in update_data.items():
+        setattr(usuario, campo, valor)
+    
+    db.commit()
+    db.refresh(usuario)
+    
+    return usuario
+
+
+@router.put("/me/password")
+def cambiar_contrasena(
+    datos: ChangePasswordRequest,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+):
+    """
+    Cambia la contraseña del usuario autenticado.
+    Requiere la contraseña actual como validación.
+    PUT /api/usuarios/me/password
+    """
+    try:
+        usuario = get_current_user(token=credentials.credentials, db=db)
+    except HTTPException:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido o expirado",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Verificar que la contraseña actual es correcta
+    if not verify_password(datos.password_actual, usuario.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Contraseña actual incorrecta",
+        )
+    
+    # Validar que la nueva contraseña sea diferente
+    if datos.password_actual == datos.password_nueva:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La nueva contraseña debe ser diferente a la actual",
+        )
+    
+    # Actualizar contraseña
+    usuario.hashed_password = hash_password(datos.password_nueva)
+    db.commit()
+    db.refresh(usuario)
+    
+    return {
+        "message": "Contraseña actualizada exitosamente",
+        "usuario": UsuarioResponse.model_validate(usuario),
+    }
+
+
+# ==================== ENDPOINTS DE ADMINISTRACIÓN ====================
 @router.get("", response_model=List[UsuarioResponse])
 def listar_usuarios(
     rol: Optional[str] = None,

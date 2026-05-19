@@ -16,6 +16,7 @@ class UsuarioBase(BaseModel):
     email: str = Field(..., description="Email del usuario")
     rol: str = Field(..., description="paciente, farmaceutico o admin")
     eps: Optional[str] = Field(None, max_length=100)
+    telefono: Optional[str] = Field(None, max_length=20)
 
     @field_validator('email')
     @classmethod
@@ -63,6 +64,7 @@ class UsuarioUpdate(BaseModel):
     apellido: Optional[str] = Field(None, max_length=100)
     email: Optional[str] = Field(None)
     eps: Optional[str] = Field(None, max_length=100)
+    telefono: Optional[str] = Field(None, max_length=20)
     rol: Optional[str] = Field(None)
     activo: Optional[bool] = None
     password: Optional[str] = Field(None, min_length=6, max_length=255)
@@ -102,6 +104,38 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     token: str = Field(..., min_length=10)
     password: str = Field(..., min_length=6, max_length=255)
+
+
+class UsuarioProfileUpdate(BaseModel):
+    """Schema para actualizar el perfil personal del usuario (sin cambiar rol ni estado)"""
+    nombre: Optional[str] = Field(None, min_length=1, max_length=100)
+    apellido: Optional[str] = Field(None, min_length=1, max_length=100)
+    email: Optional[str] = Field(None)
+    eps: Optional[str] = Field(None, max_length=100)
+    telefono: Optional[str] = Field(None, max_length=20)
+
+    @field_validator('email')
+    @classmethod
+    def validate_email(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(pattern, v):
+            raise ValueError('Email inválido')
+        return v
+
+
+class ChangePasswordRequest(BaseModel):
+    """Schema para cambiar contraseña"""
+    password_actual: str = Field(..., min_length=1, description="Contraseña actual")
+    password_nueva: str = Field(..., min_length=6, max_length=255, description="Nueva contraseña")
+
+    @field_validator('password_nueva')
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        if len(v) < 6:
+            raise ValueError('La contraseña debe tener al menos 6 caracteres')
+        return v
 
 
 class UsuarioResponse(UsuarioBase):
