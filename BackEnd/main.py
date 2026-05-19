@@ -12,6 +12,7 @@ from models import Base
 
 # Importar routers
 from routes import auth as auth_router
+from routes import usuarios as usuarios_router
 from routes import medicamentos as medicamentos_router
 from routes import farmacias as farmacias_router
 from routes import inventario as inventario_router
@@ -24,7 +25,7 @@ from websockets.network_monitor import monitor
 # ==================== CONFIGURACIÓN DE FASTAPI ====================
 
 app = FastAPI(
-    title="MediStock QR API",
+    title="MediStock API",
     description="Backend para sistema de búsqueda de medicamentos en farmacias",
     version="1.0.0",
     docs_url="/docs",
@@ -91,6 +92,7 @@ async def middleware_monitor(request: Request, call_next):
 
 # Incluir routers con prefix /api
 app.include_router(auth_router.router)
+app.include_router(usuarios_router.router)
 app.include_router(medicamentos_router.router)
 app.include_router(farmacias_router.router)
 app.include_router(inventario_router.router)
@@ -113,7 +115,7 @@ def health_check():
 def root():
     """Ruta raíz con información de la API."""
     return {
-        "nombre": "MediStock QR API",
+        "nombre": "MediStock API",
         "version": "1.0.0",
         "descripcion": "Backend para sistema de búsqueda de medicamentos en farmacias",
         "endpoints": {
@@ -136,7 +138,7 @@ async def startup_event():
     - Imprimir mensajes de bienvenida
     """
     print("\n" + "="*70)
-    print("🚀 INICIANDO MEDISTOCK QR API")
+    print("🚀 INICIANDO MEDISTOCK API")
     print("="*70)
     
     # Crear tablas si no existen
@@ -154,7 +156,7 @@ async def startup_event():
     print("   ✓ Monitor en marcha (cada 2 segundos)")
     
     # Mensaje de bienvenida
-    print("\n" + "✅ MediStock QR API corriendo en http://localhost:8000")
+    print("\n" + "✅ MediStock API corriendo en http://localhost:8000")
     print("📚 Docs en http://localhost:8000/docs")
     print("🔄 ReDoc en http://localhost:8000/redoc")
     print("🔌 WebSocket en ws://localhost:8000/api/network/ws")
@@ -165,7 +167,7 @@ async def startup_event():
 async def shutdown_event():
     """Eventos que se ejecutan al apagar la aplicación."""
     monitor.stop()
-    print("\n🛑 MediStock QR API detenido")
+    print("\n🛑 MediStock API detenido")
 
 
 # ==================== ERROR HANDLERS ====================

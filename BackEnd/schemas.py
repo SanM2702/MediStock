@@ -38,12 +38,32 @@ class UsuarioCreate(UsuarioBase):
     password: str = Field(..., min_length=6, max_length=255)
 
 
+class UsuarioRegistro(BaseModel):
+    """Schema para registro de nuevo usuario"""
+    cedula: str = Field(..., min_length=1, max_length=50)
+    nombre: str = Field(..., min_length=1, max_length=100)
+    apellido: str = Field(..., min_length=1, max_length=100)
+    email: str = Field(..., description="Email del usuario")
+    password: str = Field(..., min_length=6, max_length=255)
+    eps: str = Field(..., min_length=1, max_length=100)
+    telefono: Optional[str] = Field(None, max_length=20)
+
+    @field_validator('email')
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(pattern, v):
+            raise ValueError('Email inválido')
+        return v
+
+
 class UsuarioUpdate(BaseModel):
     """Schema para actualizar un Usuario"""
     nombre: Optional[str] = Field(None, max_length=100)
     apellido: Optional[str] = Field(None, max_length=100)
     email: Optional[str] = Field(None)
     eps: Optional[str] = Field(None, max_length=100)
+    rol: Optional[str] = Field(None)
     activo: Optional[bool] = None
     password: Optional[str] = Field(None, min_length=6, max_length=255)
 
@@ -56,6 +76,32 @@ class UsuarioUpdate(BaseModel):
         if not re.match(pattern, v):
             raise ValueError('Email inválido')
         return v
+
+    @field_validator('rol')
+    @classmethod
+    def validate_rol(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        if v not in ['paciente', 'farmaceutico', 'admin']:
+            raise ValueError('El rol debe ser: paciente, farmaceutico o admin')
+        return v
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str = Field(..., description="Email del usuario que olvidó la contraseña")
+
+    @field_validator('email')
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(pattern, v):
+            raise ValueError('Email inválido')
+        return v
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(..., min_length=10)
+    password: str = Field(..., min_length=6, max_length=255)
 
 
 class UsuarioResponse(UsuarioBase):

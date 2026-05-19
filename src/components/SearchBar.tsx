@@ -1,5 +1,4 @@
-import { Search, QrCode } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Search } from 'lucide-react';
 
 interface SearchBarProps {
   value: string;
@@ -8,8 +7,6 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({ value, onChange, placeholder = 'Buscar medicamento...' }: SearchBarProps) {
-  const navigate = useNavigate();
-
   return (
     <div className="flex items-center gap-2">
       {/* Search input */}
@@ -37,16 +34,6 @@ export default function SearchBar({ value, onChange, placeholder = 'Buscar medic
           </button>
         )}
       </div>
-
-      {/* QR button */}
-      <button
-        id="qr-scan-btn"
-        onClick={() => navigate('/qr')}
-        className="flex-shrink-0 bg-primary text-white p-3 rounded-xl shadow-sm active:scale-95 transition-all duration-150 hover:bg-primary-600"
-        aria-label="Escanear código QR"
-      >
-        <QrCode size={20} />
-      </button>
     </div>
   );
 }

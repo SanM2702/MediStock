@@ -1,5 +1,5 @@
 /**
- * Home — Página principal de MediStock QR
+ * Home — Página principal de MediStock
  * Secciones: Hero banner | Categorías | Disponibles ahora |
  *            Farmacias Sabana Centro | Stock limitado
  */

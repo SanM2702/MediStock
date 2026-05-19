@@ -1,5 +1,5 @@
 /**
- * App.tsx — Raíz de la aplicación MediStock QR
+ * App.tsx — Raíz de la aplicación MediStock
  *
  * Provee:
  *   - ThemeProvider (modo oscuro/claro global)
@@ -9,7 +9,7 @@
  */
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, NavLink } from 'react-router-dom';
-import { Home as HomeIcon, Search, QrCode, Shield, Clock, Settings } from 'lucide-react';
+import { Home as HomeIcon, Search, Shield, Clock, Settings, Users } from 'lucide-react';
 
 // Contexto de tema
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -28,15 +28,16 @@ import Buscar    from './pages/Buscar';
 import Farmacias from './pages/Farmacias';
 import MiEPS     from './pages/MiEPS';
 import Historial from './pages/Historial';
+import Usuarios  from './pages/Usuarios';
 import Admin     from './pages/Admin';
-import QR        from './pages/QR';
 import RedeAdmin from './pages/RedeAdmin';
+import ActivateAccount from './pages/ActivateAccount';
+import ResetPassword from './pages/ResetPassword';
 
 // ── Configuración del Bottom Navbar (mobile) ──────────────────────────────
 const bottomNavItems = [
   { to: '/',          label: 'Inicio',   Icon: HomeIcon, end: true  },
   { to: '/buscar',    label: 'Buscar',   Icon: Search,   end: false },
-  { to: '/qr',        label: 'Escáner',  Icon: QrCode,   end: false },
   { to: '/mi-eps',    label: 'Mi EPS',   Icon: Shield,   end: false },
   { to: '/historial', label: 'Historial',Icon: Clock,    end: false },
 ];
@@ -44,7 +45,7 @@ const bottomNavItems = [
 // ── Bottom Navigation Bar (solo mobile/tablet) ────────────────────────────
 function BottomNav({ isAdmin }: { isAdmin: boolean }) {
   const items = isAdmin
-    ? [...bottomNavItems, { to: '/admin', label: 'Admin', Icon: Settings, end: false }]
+    ? [...bottomNavItems, { to: '/usuarios', label: 'Usuarios', Icon: Users, end: false }, { to: '/admin', label: 'Admin', Icon: Settings, end: false }]
     : bottomNavItems;
 
   return (
@@ -117,15 +118,20 @@ function AppLayout() {
             {/* Ruta raíz → Home */}
             <Route path="/"          element={<Home />} />
             <Route path="/buscar"    element={<Buscar />} />
-            <Route path="/qr"        element={<QR />} />
             <Route path="/farmacias" element={<Farmacias />} />
             <Route path="/mi-eps"    element={<MiEPS />} />
             <Route path="/historial" element={<Historial />} />
-            <Route path="/admin"     element={<Admin />} />
             <Route 
-              path="/red-admin" 
-              element={isAdmin() ? <RedeAdmin /> : <Navigate to="/" replace />} 
+              path="/usuarios" 
+              element={isAdmin() ? <Usuarios /> : <Navigate to="/" replace />} 
             />
+            <Route path="/admin"     element={<Admin />} />
+            <Route
+              path="/red-admin"
+              element={isAdmin() ? <RedeAdmin /> : <Navigate to="/" replace />}
+            />
+            <Route path="/activate/:token" element={<ActivateAccount />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             {/* Cualquier ruta desconocida → Home */}
             <Route path="*"          element={<Navigate to="/" replace />} />
           </Routes>

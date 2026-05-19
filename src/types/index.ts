@@ -1,10 +1,10 @@
-// ─── Tipos de dominio — MediStock QR ─────────────────────────────────────────
+// ─── Tipos de dominio — MediStock ─────────────────────────────────────────
 
 // ── Tema ──────────────────────────────────────────────────────────────────────
 export type Tema = 'claro' | 'oscuro';
 
 // ── Rol de usuario ────────────────────────────────────────────────────────────
-export type RolUsuario = 'paciente' | 'farmaceutico';
+export type RolUsuario = 'paciente' | 'farmaceutico' | 'admin';
 
 // ── Usuario ───────────────────────────────────────────────────────────────────
 export interface Usuario {
@@ -12,6 +12,9 @@ export interface Usuario {
   nombre: string;
   eps: string;
   rol: RolUsuario;
+  id?: number;
+  apellido?: string;
+  email?: string;
 }
 
 // ── Categoría de medicamento ──────────────────────────────────────────────────

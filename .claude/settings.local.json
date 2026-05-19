@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(venv/Scripts/python.exe -c \"from routes import usuarios; from schemas import UsuarioCreate, UsuarioUpdate; print\\('OK'\\)\")",
+      "Bash(venv/Scripts/python.exe -c ' *)",
+      "Bash(venv/Scripts/python.exe -c \"from routes import auth as a; from auth import crear_token_scoped, verificar_token_scoped; tok = crear_token_scoped\\(5, 'activacion', 60\\); uid = verificar_token_scoped\\(tok, 'activacion'\\); print\\('Round-trip OK, uid:', uid, type\\(uid\\).__name__\\)\")"
+    ]
+  }
+}

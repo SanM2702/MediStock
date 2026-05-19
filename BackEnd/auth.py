@@ -51,25 +51,71 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def crear_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """
     Crea un JWT token.
-    
+
     Args:
         data: Datos a incluir en el payload del token
         expires_delta: Tiempo de expiración personalizado
-        
+
     Returns:
         str: Token JWT codificado
     """
     to_encode = data.copy()
-    
+
+    # JWT (RFC 7519) exige que "sub" sea string. python-jose ≥3.x rechaza
+    # tokens con sub no-string al decodificar (JWTClaimsError).
+    if "sub" in to_encode and not isinstance(to_encode["sub"], str):
+        to_encode["sub"] = str(to_encode["sub"])
+
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    
+
     to_encode.update({"exp": expire})
-    
+
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+
+def crear_token_scoped(usuario_id: int, scope: str, ttl_minutes: int) -> str:
+    """
+    Crea un JWT corto destinado a un flujo específico (activación, reset, etc.).
+    Incluye un claim `scope` que evita que un token de activación se pueda usar
+    como sesión normal o como reset de contraseña.
+    """
+    return crear_token(
+        {"sub": usuario_id, "scope": scope},
+        expires_delta=timedelta(minutes=ttl_minutes),
+    )
+
+
+def verificar_token_scoped(token: str, scope_esperado: str) -> int:
+    """
+    Decodifica y valida un JWT con scope. Devuelve el id del usuario.
+    Lanza HTTPException 400 si el token es inválido, expirado, o de otro scope.
+    """
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El enlace es inválido o ha expirado.",
+        )
+
+    if payload.get("scope") != scope_esperado:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El enlace no es válido para esta operación.",
+        )
+
+    sub = payload.get("sub")
+    try:
+        return int(sub) if sub is not None else 0
+    except (TypeError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El enlace es inválido.",
+        )
 
 
 def verificar_token(token: str) -> dict:
@@ -130,8 +176,12 @@ def get_current_user(
         )
     
     payload = verificar_token(token)
-    usuario_id = payload.get("sub")
-    
+    sub = payload.get("sub")
+    try:
+        usuario_id = int(sub) if sub is not None else None
+    except (TypeError, ValueError):
+        usuario_id = None
+
     usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
     
     if not usuario or not usuario.activo:
