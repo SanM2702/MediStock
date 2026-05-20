@@ -3,9 +3,14 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import os
-import cloudinary
-import cloudinary.uploader
+import logging
 from io import BytesIO
+
+try:
+    import cloudinary
+    import cloudinary.uploader
+except Exception as exc:
+    cloudinary = None
 
 from database import get_db
 from models import Usuario
@@ -24,13 +29,17 @@ router = APIRouter(
 )
 
 security = HTTPBearer()
+logger = logging.getLogger("medistock.usuarios")
 
 # Configurar Cloudinary
-cloudinary.config(
-    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
-    api_key=os.getenv("CLOUDINARY_API_KEY"),
-    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
-)
+if cloudinary:
+    cloudinary.config(
+        cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+        api_key=os.getenv("CLOUDINARY_API_KEY"),
+        api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    )
+else:
+    logger.warning("Cloudinary package is not available. Photo upload endpoint will return 503.")
 
 
 def _require_admin(
@@ -234,12 +243,14 @@ async def subir_foto_perfil(
     api_key = os.getenv("CLOUDINARY_API_KEY")
     api_secret = os.getenv("CLOUDINARY_API_SECRET")
     
-    if not cloud_name or not api_key or not api_secret:
-        print("⚠️  ADVERTENCIA: Cloudinary no está configurado correctamente")
-        print(f"   CLOUDINARY_CLOUD_NAME: {'✓' if cloud_name else '✗'}")
-        print(f"   CLOUDINARY_API_KEY: {'✓' if api_key else '✗'}")
-        print(f"   CLOUDINARY_API_SECRET: {'✓' if api_secret else '✗'}")
-        
+    if not cloudinary or not cloud_name or not api_key or not api_secret:
+        logger.warning(
+            "Cloudinary is not configured. cloudinary=%s cloud_name=%s api_key=%s api_secret=%s",
+            bool(cloudinary),
+            bool(cloud_name),
+            bool(api_key),
+            bool(api_secret),
+        )
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Servicio de almacenamiento de imágenes no disponible. "
@@ -248,7 +259,7 @@ async def subir_foto_perfil(
     
     try:
         # 7. Subir a Cloudinary
-        print(f"Subiendo imagen de {usuario.nombre} {usuario.apellido} a Cloudinary...")
+        logger.info("Uploading profile image for user_id=%s to Cloudinary", usuario.id)
         
         # Convertir bytes a BytesIO para Cloudinary
         file_obj = BytesIO(contenido)
@@ -274,13 +285,13 @@ async def subir_foto_perfil(
         db.commit()
         db.refresh(usuario)
         
-        print(f"✓ Imagen subida correctamente: {foto_url}")
+        logger.info("Profile image uploaded successfully for user_id=%s", usuario.id)
         return usuario
         
     except Exception as e:
         db.rollback()
         error_msg = str(e)
-        print(f"❌ Error al subir imagen a Cloudinary: {error_msg}")
+        logger.exception("Cloudinary upload failed for user_id=%s", usuario.id)
         
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

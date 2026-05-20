@@ -7,6 +7,7 @@ import secrets
 from database import get_db
 from models import Usuario
 from schemas import (
+    LoginRequest,
     UsuarioResponse,
     UsuarioRegistro,
     ForgotPasswordRequest,
@@ -36,15 +37,14 @@ security = HTTPBearer()
 
 @router.post("/login")
 def login(
-    cedula: str,
-    password: str,
+    data: LoginRequest,
     db: Session = Depends(get_db),
 ):
     """
     Inicia sesión con cédula y contraseña.
     Retorna un JWT token válido por 480 minutos.
     """
-    usuario = db.query(Usuario).filter(Usuario.cedula == cedula).first()
+    usuario = db.query(Usuario).filter(Usuario.cedula == data.cedula).first()
 
     if not usuario:
         raise HTTPException(
@@ -52,7 +52,7 @@ def login(
             detail="Cédula o contraseña incorrectos",
         )
 
-    if not verify_password(password, usuario.hashed_password):
+    if not verify_password(data.password, usuario.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Cédula o contraseña incorrectos",
@@ -76,7 +76,20 @@ def login(
     return {
         "access_token": token,
         "token_type": "bearer",
-        "usuario": UsuarioResponse.model_validate(usuario).model_dump(),
+        "usuario": {
+            "id": usuario.id,
+            "cedula": usuario.cedula,
+            "nombre": usuario.nombre,
+            "apellido": usuario.apellido,
+            "email": usuario.email,
+            "rol": usuario.rol,
+            "eps": usuario.eps,
+            "telefono": usuario.telefono,
+            "foto_url": usuario.foto_url,
+            "activo": usuario.activo,
+            "creado_en": usuario.creado_en,
+            "actualizado_en": usuario.actualizado_en,
+        },
     }
 
 

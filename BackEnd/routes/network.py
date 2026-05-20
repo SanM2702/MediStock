@@ -8,7 +8,7 @@ from database import get_db
 from auth import get_admin_user, verificar_token
 from models import Usuario, SesionRed
 from schemas import SesionRedResponse
-from websockets.network_monitor import monitor
+from monitoring.network_monitor import monitor
 
 router = APIRouter(
     prefix="/api/network",

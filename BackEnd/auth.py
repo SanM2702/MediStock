@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+import os
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
@@ -10,7 +11,7 @@ from database import get_db
 from models import Usuario
 
 # Configuraciones de seguridad
-SECRET_KEY = "medistock-secret-key-2025"
+SECRET_KEY = os.getenv("SECRET_KEY", "medistock-secret-key-2025")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 480
 

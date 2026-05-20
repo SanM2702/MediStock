@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy import inspect
+import logging
 import time
 import asyncio
 from datetime import datetime
@@ -9,6 +9,9 @@ from dotenv import load_dotenv
 
 # Cargar variables de entorno desde archivo .env
 load_dotenv()
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("medistock")
 
 # Importar database y modelos
 from database import engine
@@ -24,7 +27,7 @@ from routes import network as network_router
 
 # Importar utilidades
 from seed import seed_database
-from websockets.network_monitor import monitor
+from monitoring.network_monitor import monitor
 
 # ==================== CONFIGURACIÓN DE FASTAPI ====================
 
@@ -39,21 +42,15 @@ app = FastAPI(
 
 # ==================== CORS ====================
 
-from fastapi.middleware.cors import CORSMiddleware
-
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://medi-stock-kx97dc394-santim-projects.vercel.app",
+    "https://medi-stock.vercel.app",
+    "https://medi-stock-1scv3rq9k-santim-projects.vercel.app",
 ]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Permitir cualquier preview deployment de Vercel
+origin_regex = r"https://.*\.vercel\.app"
 
 # ==================== MIDDLEWARE DE LATENCIA Y REQUESTS ====================
 
@@ -83,13 +80,25 @@ async def middleware_monitor(request: Request, call_next):
         
         return response
         
-    except Exception as e:
+    except Exception:
+        logger.exception("Unhandled error while processing request %s", request.url.path)
         latencia = time.time() - start_time
         return JSONResponse(
             status_code=500,
             content={"detail": "Internal server error"},
             headers={"X-Process-Time": str(latencia)},
         )
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_origin_regex=origin_regex,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
 
 
 # ==================== ROUTERS ====================
@@ -141,30 +150,28 @@ async def startup_event():
     - Ejecutar seed si la BD está vacía
     - Imprimir mensajes de bienvenida
     """
-    print("\n" + "="*70)
-    print("🚀 INICIANDO MEDISTOCK API")
-    print("="*70)
+    logger.info("Starting MediStock API")
     
-    # Crear tablas si no existen
-    print("\n📦 Creando tablas en base de datos...")
-    Base.metadata.create_all(bind=engine)
-    print("   ✓ Tablas listas")
+    try:
+        logger.info("Creating database tables if needed")
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database tables are ready")
+    except Exception:
+        logger.exception("Database initialization failed. API will continue in degraded mode.")
     
-    # Ejecutar seed
-    print("\n🌱 Verificando datos iniciales...")
-    seed_database()
+    try:
+        logger.info("Checking initial seed data")
+        seed_database()
+    except Exception:
+        logger.exception("seed_database() failed. Startup will continue without seed data.")
     
-    # Iniciar monitor de red en background
-    print("\n📡 Iniciando monitor de red...")
-    asyncio.create_task(monitor.start(intervalo=2.0))
-    print("   ✓ Monitor en marcha (cada 2 segundos)")
+    try:
+        logger.info("Starting network monitor task")
+        asyncio.create_task(monitor.start(intervalo=2.0))
+    except Exception:
+        logger.exception("Network monitor could not be started. API will continue without monitor task.")
     
-    # Mensaje de bienvenida
-    print("\n" + "✅ MediStock API corriendo en http://localhost:8000")
-    print("📚 Docs en http://localhost:8000/docs")
-    print("🔄 ReDoc en http://localhost:8000/redoc")
-    print("🔌 WebSocket en ws://localhost:8000/api/network/ws")
-    print("="*70 + "\n")
+    logger.info("MediStock API startup completed")
 
 
 @app.on_event("shutdown")
@@ -180,6 +187,7 @@ async def shutdown_event():
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Manejador global de excepciones."""
+    logger.exception("Unhandled exception on %s", request.url.path)
     return JSONResponse(
         status_code=500,
         content={
