@@ -24,6 +24,7 @@ from routes import medicamentos as medicamentos_router
 from routes import farmacias as farmacias_router
 from routes import inventario as inventario_router
 from routes import network as network_router
+from routes import chat as chat_router
 
 # Importar utilidades
 from seed import seed_database
@@ -110,6 +111,7 @@ app.include_router(medicamentos_router.router)
 app.include_router(farmacias_router.router)
 app.include_router(inventario_router.router)
 app.include_router(network_router.router)
+app.include_router(chat_router.router)
 
 # ==================== HEALTH CHECK ====================
 

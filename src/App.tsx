@@ -35,6 +35,9 @@ import RedeAdmin from './pages/RedeAdmin';
 import ActivateAccount from './pages/ActivateAccount';
 import ResetPassword from './pages/ResetPassword';
 
+// Chatbot widget flotante
+import ChatbotWidget from './components/chatbot/ChatbotWidget';
+
 // ── Configuración del Bottom Navbar (mobile) ──────────────────────────────
 const bottomNavItems = [
   { to: '/',          label: 'Inicio',   Icon: HomeIcon, end: true  },
@@ -142,6 +145,9 @@ function AppLayout() {
 
       {/* ── Bottom nav (mobile) ────────────────────────────────────── */}
       <BottomNav isAdmin={isAdmin()} />
+
+      {/* ── Chatbot widget flotante ────────────────────────────────── */}
+      <ChatbotWidget />
 
       {/* ── Modal de login ─────────────────────────────────────────── */}
       <LoginModal
