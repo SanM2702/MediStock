@@ -1,0 +1,47 @@
+/**
+ * Estilos para la página del Chatbot
+ */
+
+.chatbot-page {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.chatbot-page-container {
+  width: 100%;
+  max-width: 600px;
+  height: 100%;
+  max-height: 800px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .chatbot-page {
+    padding: 0;
+  }
+
+  .chatbot-page-container {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 0;
+  }
+}
+
+/* Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .chatbot-page-container {
+    max-width: 500px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1025px) {
+  .chatbot-page-container {
+    max-width: 700px;
+  }
+}
