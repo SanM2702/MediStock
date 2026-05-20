@@ -76,8 +76,8 @@ export const api = {
   },
 
   login: (cedula: string, password: string) => {
-    return fetcher<any>(`/auth/login`, "POST", { cedula, password });
-  },
+  return fetcher<any>("/auth/login", "POST", { cedula, password });
+},
 
   registro: (datos: {
     cedula: string;
