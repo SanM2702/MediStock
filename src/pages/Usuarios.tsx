@@ -249,176 +249,224 @@ export default function Usuarios() {
   }, [usuarios]);
 
   return (
-    <div className="flex-1 overflow-y-auto pb-20 lg:pb-6 bg-slate-50 dark:bg-slate-900">
-      <div className="max-w-screen-xl mx-auto px-4">
+    <div className="flex-1 overflow-y-auto pb-20 lg:pb-6 bg-gradient-to-br from-slate-50 via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* ── Encabezado ──────────────────────────────────────────────── */}
-        <div className="py-6 flex items-center justify-between">
+        {/* ── Encabezado Premium ──────────────────────────────────────── */}
+        <div className="py-8 sm:py-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-              Gestión de Usuarios
-            </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-              Panel de superusuario · Sabana Centro
-            </p>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/25">
+                <Users size={24} className="text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                  Gestión de Usuarios
+                </h1>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Panel de superusuario · Sabana Centro
+                </p>
+              </div>
+            </div>
           </div>
           <button
             id="btn-crear-usuario"
             onClick={openCreateModal}
-            className="flex items-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-xl bg-primary-500 dark:bg-emerald-500 text-white hover:bg-primary-600 dark:hover:bg-emerald-600 active:scale-95 transition-all shadow-sm"
+            className="flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
           >
-            <Plus size={16} /> Nuevo Usuario
+            <Plus size={18} /> Nuevo Usuario
           </button>
         </div>
 
-        {/* ── Tarjetas de estadísticas ─────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-          <div className="card flex items-center gap-3 p-4">
-            <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
-              <Users size={20} className="text-primary-600 dark:text-emerald-400" />
+        {/* ── KPIs Premium con Gradientes ─────────────────────────────── */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 dark:from-emerald-500 dark:to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                <Users size={28} className="text-white" />
+              </div>
+              <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+              </div>
             </div>
-            <div>
-              <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 leading-none">
-                {stats.total}
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Total usuarios</p>
-            </div>
+            <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-1">
+              {stats.total}
+            </p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total usuarios</p>
           </div>
 
-          <div className="card flex items-center gap-3 p-4">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-              <User size={20} className="text-blue-600 dark:text-blue-400" />
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <User size={28} className="text-white" />
+              </div>
+              <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+              </div>
             </div>
-            <div>
-              <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 leading-none">
-                {stats.pacientes}
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pacientes</p>
-            </div>
+            <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-1">
+              {stats.pacientes}
+            </p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Pacientes</p>
           </div>
 
-          <div className="card flex items-center gap-3 p-4">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
-              <Shield size={20} className="text-purple-600 dark:text-purple-400" />
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-400 to-purple-600 dark:from-purple-500 dark:to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                <Shield size={28} className="text-white" />
+              </div>
+              <div className="w-8 h-8 rounded-full bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+              </div>
             </div>
-            <div>
-              <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 leading-none">
-                {stats.farmaceuticos}
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Farmacéuticos</p>
-            </div>
+            <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-1">
+              {stats.farmaceuticos}
+            </p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Farmacéuticos</p>
           </div>
 
-          <div className="card flex items-center gap-3 p-4">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-              <Shield size={20} className="text-amber-600 dark:text-amber-400" />
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 dark:from-amber-500 dark:to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
+                <Shield size={28} className="text-white" />
+              </div>
+              <div className="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+              </div>
             </div>
-            <div>
-              <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 leading-none">
-                {stats.admins}
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Administradores</p>
-            </div>
+            <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-1">
+              {stats.admins}
+            </p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Administradores</p>
           </div>
         </div>
 
-        {/* ── Barra de búsqueda ───────────────────────────────────────── */}
-        <div className="card p-4 mb-4">
+        {/* ── Buscador Premium ───────────────────────────────────────── */}
+        <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 mb-6">
           <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               placeholder="Buscar por nombre, cédula, EPS o rol..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-100 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-xl text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-emerald-500 transition-all"
+              className="w-full pl-12 pr-4 py-4 text-sm bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-2xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200"
             />
           </div>
         </div>
 
-        {/* ── Tabla de usuarios ──────────────────────────────────────── */}
-        <div className="card p-0 overflow-hidden mb-4">
+        {/* ── Tabla Premium ──────────────────────────────────────────── */}
+        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
           {/* Cabecera de la tabla */}
-          <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-              Lista de usuarios
-            </h2>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+          <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center">
+                <Users size={20} className="text-slate-600 dark:text-slate-300" />
+              </div>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                Lista de usuarios
+              </h2>
+            </div>
+            <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-3 py-1.5 rounded-full">
               {filteredUsuarios.length} {filteredUsuarios.length === 1 ? 'usuario' : 'usuarios'}
             </span>
           </div>
 
           {/* Loading */}
           {loading && (
-            <div className="px-4 py-8 text-center text-slate-500 dark:text-slate-400 text-sm">
-              Cargando usuarios...
+            <div className="px-6 py-12 text-center">
+              <div className="inline-flex items-center gap-3 text-slate-500 dark:text-slate-400">
+                <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm font-medium">Cargando usuarios...</span>
+              </div>
             </div>
           )}
 
           {/* Error */}
           {error && (
-            <div className="px-4 py-8 text-center text-red-500 dark:text-red-400 text-sm">
-              {error}
+            <div className="px-6 py-12 text-center">
+              <div className="inline-flex items-center gap-2 text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-4 py-3 rounded-2xl">
+                <X size={18} />
+                <span className="text-sm font-medium">{error}</span>
+              </div>
             </div>
           )}
 
           {/* Cabecera de columnas */}
-          <div className="grid grid-cols-12 px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700 text-xs font-semibold text-slate-500 dark:text-slate-400">
-            <button
-              className="col-span-4 flex items-center gap-0.5 text-left hover:text-primary-500 dark:hover:text-emerald-400 transition-colors"
-              onClick={() => toggleSort('nombre')}
-            >
-              Nombre <SortIcon col="nombre" />
-            </button>
-            <button
-              className="col-span-2 flex items-center gap-0.5 text-left hover:text-primary-500 dark:hover:text-emerald-400 transition-colors"
-              onClick={() => toggleSort('cedula')}
-            >
-              Cédula <SortIcon col="cedula" />
-            </button>
-            <button
-              className="col-span-3 flex items-center gap-0.5 text-left hover:text-primary-500 dark:hover:text-emerald-400 transition-colors"
-              onClick={() => toggleSort('eps')}
-            >
-              EPS <SortIcon col="eps" />
-            </button>
-            <button
-              className="col-span-2 flex items-center gap-0.5 text-left hover:text-primary-500 dark:hover:text-emerald-400 transition-colors"
-              onClick={() => toggleSort('rol')}
-            >
-              Rol <SortIcon col="rol" />
-            </button>
-            <span className="col-span-1 text-center">Acciones</span>
-          </div>
+          {!loading && !error && (
+            <div className="grid grid-cols-12 px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <button
+                className="col-span-4 flex items-center gap-2 text-left hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                onClick={() => toggleSort('nombre')}
+              >
+                Nombre <SortIcon col="nombre" />
+              </button>
+              <button
+                className="col-span-2 flex items-center gap-2 text-left hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                onClick={() => toggleSort('cedula')}
+              >
+                Cédula <SortIcon col="cedula" />
+              </button>
+              <button
+                className="col-span-3 flex items-center gap-2 text-left hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                onClick={() => toggleSort('eps')}
+              >
+                EPS <SortIcon col="eps" />
+              </button>
+              <button
+                className="col-span-2 flex items-center gap-2 text-left hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                onClick={() => toggleSort('rol')}
+              >
+                Rol <SortIcon col="rol" />
+              </button>
+              <span className="col-span-1 text-center">Acciones</span>
+            </div>
+          )}
 
           {/* Filas */}
           {!loading && !error && (
-            <div className="divide-y divide-slate-50 dark:divide-slate-800">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {filteredUsuarios.length === 0 ? (
-                <div className="px-4 py-8 text-center text-slate-500 dark:text-slate-400 text-sm">
-                  No se encontraron usuarios
+                <div className="px-6 py-12 text-center">
+                  <div className="inline-flex flex-col items-center gap-3 text-slate-400">
+                    <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center">
+                      <Users size={32} />
+                    </div>
+                    <span className="text-sm font-medium">No se encontraron usuarios</span>
+                  </div>
                 </div>
               ) : (
-                filteredUsuarios.map((usuario) => (
+                filteredUsuarios.map((usuario, index) => (
                 <div
                   key={(usuario as any).id ?? usuario.cedula}
-                  className="grid grid-cols-12 px-4 py-3 items-center hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+                  className="grid grid-cols-12 px-6 py-4 items-center hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-all duration-200 group"
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
                   {/* Nombre */}
                   <div className="col-span-4 min-w-0">
-                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate leading-tight">
-                      {usuario.nombre}
-                    </p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 dark:from-emerald-500 dark:to-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                        {usuario.nombre.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                          {usuario.nombre}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                          {usuario.apellido || ''}
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Cédula */}
-                  <p className="col-span-2 text-xs text-slate-500 dark:text-slate-400 truncate">
+                  <p className="col-span-2 text-sm font-medium text-slate-600 dark:text-slate-400">
                     {usuario.cedula}
                   </p>
 
                   {/* EPS */}
-                  <p className="col-span-3 text-xs text-slate-500 dark:text-slate-400 truncate">
-                    {usuario.eps}
+                  <p className="col-span-3 text-sm text-slate-600 dark:text-slate-400 truncate">
+                    {usuario.eps || '—'}
                   </p>
 
                   {/* Rol */}
@@ -431,18 +479,18 @@ export default function Usuarios() {
                     <button
                       onClick={() => openEditModal(usuario)}
                       disabled={isSelf(usuario)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-primary-500 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                      className="p-2 rounded-xl text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent hover:scale-110"
                       title={isSelf(usuario) ? 'No puedes editar tu propio usuario aquí' : 'Editar'}
                     >
-                      <Edit size={14} />
+                      <Edit size={16} />
                     </button>
                     <button
                       onClick={() => openDeleteModal(usuario)}
                       disabled={isSelf(usuario)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                      className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent hover:scale-110"
                       title={isSelf(usuario) ? 'No puedes eliminar tu propio usuario' : 'Eliminar'}
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
@@ -452,128 +500,142 @@ export default function Usuarios() {
           )}
         </div>
 
-        {/* ── Modal Crear Usuario ─────────────────────────────────────── */}
+        {/* ── Modal Crear Usuario Premium ─────────────────────────────── */}
         {isCreateModalOpen && (
-          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 animate-fade-in">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                  Nuevo Usuario
-                </h3>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-lg p-8 transform transition-all">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                    <Plus size={24} className="text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                      Nuevo Usuario
+                    </h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      Crea una cuenta de usuario
+                    </p>
+                  </div>
+                </div>
                 <button
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 hover:scale-110"
                 >
-                  <X size={18} />
+                  <X size={20} />
                 </button>
               </div>
 
               <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Cédula
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.cedula}
-                    onChange={(e) => setFormData({ ...formData, cedula: e.target.value })}
-                    className="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-emerald-500 transition-all"
-                    placeholder="123456789"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-wider">
+                      Cédula
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.cedula}
+                      onChange={(e) => setFormData({ ...formData, cedula: e.target.value })}
+                      className="w-full px-4 py-3 text-sm bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-2xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200"
+                      placeholder="123456789"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-wider">
+                      Rol
+                    </label>
+                    <select
+                      value={formData.rol}
+                      onChange={(e) => setFormData({ ...formData, rol: e.target.value as RolUsuario })}
+                      className="w-full px-4 py-3 text-sm bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-2xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200"
+                    >
+                      <option value="paciente">Paciente</option>
+                      <option value="farmaceutico">Farmacéutico</option>
+                      <option value="admin">Administrador</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-wider">
+                      Nombre
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.nombre}
+                      onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                      className="w-full px-4 py-3 text-sm bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-2xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200"
+                      placeholder="Juan"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-wider">
+                      Apellido
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.apellido}
+                      onChange={(e) => setFormData({ ...formData, apellido: e.target.value })}
+                      className="w-full px-4 py-3 text-sm bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-2xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200"
+                      placeholder="Pérez"
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Nombre completo
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.nombre}
-                    onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                    className="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-emerald-500 transition-all"
-                    placeholder="Juan"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Apellido
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.apellido}
-                    onChange={(e) => setFormData({ ...formData, apellido: e.target.value })}
-                    className="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-emerald-500 transition-all"
-                    placeholder="Pérez"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-wider">
                     Email
                   </label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-emerald-500 transition-all"
+                    className="w-full px-4 py-3 text-sm bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-2xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200"
                     placeholder="juan@ejemplo.com"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-wider">
                     EPS {formData.rol === 'paciente' && <span className="text-slate-400 font-normal">(recomendada)</span>}
                   </label>
                   <input
                     type="text"
                     value={formData.eps}
                     onChange={(e) => setFormData({ ...formData, eps: e.target.value })}
-                    className="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-emerald-500 transition-all"
+                    className="w-full px-4 py-3 text-sm bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-2xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200"
                     placeholder="Sanitas"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-wider">
                     Contraseña <span className="text-slate-400 font-normal">(mín. 6 caracteres)</span>
                   </label>
                   <input
                     type="password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-emerald-500 transition-all"
+                    className="w-full px-4 py-3 text-sm bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-2xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200"
                     placeholder="••••••"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Rol
-                  </label>
-                  <select
-                    value={formData.rol}
-                    onChange={(e) => setFormData({ ...formData, rol: e.target.value as RolUsuario })}
-                    className="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-emerald-500 transition-all"
-                  >
-                    <option value="paciente">Paciente</option>
-                    <option value="farmaceutico">Farmacéutico</option>
-                    <option value="admin">Administrador</option>
-                  </select>
-                </div>
-
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-3 pt-4">
                   <button
                     onClick={() => setIsCreateModalOpen(false)}
-                    className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    className="flex-1 px-6 py-3 text-sm font-semibold rounded-2xl border-2 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={handleCreate}
-                    className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-xl bg-primary-500 dark:bg-emerald-500 text-white hover:bg-primary-600 dark:hover:bg-emerald-600 transition-colors"
+                    className="flex-1 px-6 py-3 text-sm font-semibold rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                   >
-                    Crear
+                    Crear Usuario
                   </button>
                 </div>
               </div>
@@ -581,123 +643,137 @@ export default function Usuarios() {
           </div>
         )}
 
-        {/* ── Modal Editar Usuario ─────────────────────────────────────── */}
+        {/* ── Modal Editar Usuario Premium ─────────────────────────────── */}
         {isEditModalOpen && selectedUser && (
-          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 animate-fade-in">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                  Editar Usuario
-                </h3>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-lg p-8 transform transition-all">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <Edit size={24} className="text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                      Editar Usuario
+                    </h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      Actualiza la información del usuario
+                    </p>
+                  </div>
+                </div>
                 <button
                   onClick={() => setIsEditModalOpen(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 hover:scale-110"
                 >
-                  <X size={18} />
+                  <X size={20} />
                 </button>
               </div>
 
               <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Cédula
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.cedula}
-                    disabled
-                    className="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-xl text-slate-400 dark:text-slate-500 cursor-not-allowed"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-wider">
+                      Cédula
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.cedula}
+                      disabled
+                      className="w-full px-4 py-3 text-sm bg-slate-100 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-2xl text-slate-400 dark:text-slate-500 cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-wider">
+                      Rol
+                    </label>
+                    <select
+                      value={formData.rol}
+                      onChange={(e) => setFormData({ ...formData, rol: e.target.value as RolUsuario })}
+                      className="w-full px-4 py-3 text-sm bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-2xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200"
+                    >
+                      <option value="paciente">Paciente</option>
+                      <option value="farmaceutico">Farmacéutico</option>
+                      <option value="admin">Administrador</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-wider">
+                      Nombre
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.nombre}
+                      onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                      className="w-full px-4 py-3 text-sm bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-2xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-wider">
+                      Apellido
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.apellido}
+                      onChange={(e) => setFormData({ ...formData, apellido: e.target.value })}
+                      className="w-full px-4 py-3 text-sm bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-2xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200"
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Nombre completo
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.nombre}
-                    onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                    className="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-emerald-500 transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Apellido
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.apellido}
-                    onChange={(e) => setFormData({ ...formData, apellido: e.target.value })}
-                    className="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-emerald-500 transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-wider">
                     Email
                   </label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-emerald-500 transition-all"
+                    className="w-full px-4 py-3 text-sm bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-2xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-wider">
                     EPS
                   </label>
                   <input
                     type="text"
                     value={formData.eps}
                     onChange={(e) => setFormData({ ...formData, eps: e.target.value })}
-                    className="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-emerald-500 transition-all"
+                    className="w-full px-4 py-3 text-sm bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-2xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Rol
-                  </label>
-                  <select
-                    value={formData.rol}
-                    onChange={(e) => setFormData({ ...formData, rol: e.target.value as RolUsuario })}
-                    className="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-emerald-500 transition-all"
-                  >
-                    <option value="paciente">Paciente</option>
-                    <option value="farmaceutico">Farmacéutico</option>
-                    <option value="admin">Administrador</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-wider">
                     Nueva contraseña <span className="text-slate-400 font-normal">(opcional)</span>
                   </label>
                   <input
                     type="password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-700 border border-transparent dark:border-slate-600 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-emerald-500 transition-all"
+                    className="w-full px-4 py-3 text-sm bg-slate-50 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-600 rounded-2xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200"
                     placeholder="Dejar en blanco para no cambiar"
                   />
                 </div>
 
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-3 pt-4">
                   <button
                     onClick={() => setIsEditModalOpen(false)}
-                    className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    className="flex-1 px-6 py-3 text-sm font-semibold rounded-2xl border-2 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={handleEdit}
-                    className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-xl bg-primary-500 dark:bg-emerald-500 text-white hover:bg-primary-600 dark:hover:bg-emerald-600 transition-colors"
+                    className="flex-1 px-6 py-3 text-sm font-semibold rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-lg shadow-blue-500/25 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                   >
-                    Guardar
+                    Guardar Cambios
                   </button>
                 </div>
               </div>
@@ -705,33 +781,40 @@ export default function Usuarios() {
           </div>
         )}
 
-        {/* ── Modal Eliminar Usuario ───────────────────────────────────── */}
+        {/* ── Modal Eliminar Usuario Premium ───────────────────────────── */}
         {isDeleteModalOpen && selectedUser && (
-          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 animate-fade-in">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
-                  <Trash2 size={20} className="text-red-600 dark:text-red-400" />
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-8 transform transition-all">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center shadow-lg shadow-red-500/30 flex-shrink-0">
+                  <Trash2 size={28} className="text-white" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                  Eliminar Usuario
-                </h3>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                    Eliminar Usuario
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Esta acción no se puede deshacer
+                  </p>
+                </div>
               </div>
 
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
-                ¿Estás seguro de que deseas eliminar a <strong>{selectedUser.nombre}</strong>? Esta acción no se puede deshacer.
-              </p>
+              <div className="bg-red-50 dark:bg-red-900/20 rounded-2xl p-4 mb-6 border border-red-200 dark:border-red-800">
+                <p className="text-sm text-slate-700 dark:text-slate-300">
+                  ¿Estás seguro de que deseas eliminar a <strong className="text-red-600 dark:text-red-400">{selectedUser.nombre}</strong>?
+                </p>
+              </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <button
                   onClick={() => setIsDeleteModalOpen(false)}
-                  className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  className="flex-1 px-6 py-3 text-sm font-semibold rounded-2xl border-2 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-xl bg-red-500 text-white hover:bg-red-600 transition-colors"
+                  className="flex-1 px-6 py-3 text-sm font-semibold rounded-2xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg shadow-red-500/25 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                 >
                   Eliminar
                 </button>
