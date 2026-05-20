@@ -380,3 +380,111 @@ class SesionRedResponse(SesionRedBase):
     timestamp: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# ==================== MÓDULO AUDIFARMA — AGENDAMIENTO DE TURNOS ====================
+
+from datetime import date, time
+
+
+# ---------- EPS ----------
+
+class EPSBase(BaseModel):
+    nombre: str = Field(..., min_length=1, max_length=150)
+    codigo: Optional[str] = Field(None, max_length=20)
+
+
+class EPSCreate(EPSBase):
+    pass
+
+
+class EPSResponse(EPSBase):
+    id: int
+    activo: bool
+    creado_en: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ---------- HorarioDisponible ----------
+
+class HorarioDisponibleBase(BaseModel):
+    farmacia_id: int
+    fecha: date
+    hora_inicio: time
+    hora_fin: time
+    capacidad_maxima: int = Field(default=1, ge=1)
+
+
+class HorarioDisponibleCreate(HorarioDisponibleBase):
+    pass
+
+
+class HorarioDisponibleResponse(HorarioDisponibleBase):
+    id: int
+    turnos_agendados: int
+    activo: bool
+    creado_en: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ---------- TurnoMedicamento ----------
+
+class TurnoMedicamentoCreate(BaseModel):
+    medicamento_id: int
+    cantidad: int = Field(default=1, ge=1)
+
+
+class TurnoMedicamentoResponse(BaseModel):
+    id: int
+    medicamento_id: int
+    cantidad: int
+    medicamento: Optional["MedicamentoResponse"] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ---------- Turno ----------
+
+class TurnoCreate(BaseModel):
+    farmacia_id: int
+    eps_id: int
+    horario_id: int
+    medicamentos: List[TurnoMedicamentoCreate] = Field(..., min_length=1)
+    observaciones: Optional[str] = Field(None, max_length=500)
+
+
+class TurnoResponse(BaseModel):
+    id: int
+    codigo: str
+    numero_turno: int
+    usuario_id: int
+    farmacia_id: int
+    eps_id: int
+    horario_id: int
+    fecha: date
+    hora: time
+    estado: str
+    observaciones: Optional[str] = None
+    creado_en: datetime
+    actualizado_en: datetime
+
+    # Datos relacionados (opcionales para respuestas enriquecidas)
+    farmacia: Optional["FarmaciaResponse"] = None
+    eps_obj: Optional["EPSResponse"] = None
+    medicamentos: List[TurnoMedicamentoResponse] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TurnoEstadoUpdate(BaseModel):
+    estado: str = Field(..., description="Pendiente, Confirmado, Cancelado, Completado")
+
+    @field_validator("estado")
+    @classmethod
+    def validate_estado(cls, v: str) -> str:
+        estados_validos = {"Pendiente", "Confirmado", "Cancelado", "Completado"}
+        if v not in estados_validos:
+            raise ValueError(f"Estado inválido. Debe ser uno de: {', '.join(estados_validos)}")
+        return v

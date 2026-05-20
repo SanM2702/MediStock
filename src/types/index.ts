@@ -117,3 +117,61 @@ export interface StatCard {
   color: string;
   bgColor: string;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Módulo Audifarma — Agendamiento de Turnos
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface EPS {
+  id: number;
+  nombre: string;
+  codigo?: string;
+  activo: boolean;
+  creado_en: string;
+}
+
+export interface HorarioDisponible {
+  id: number;
+  farmacia_id: number;
+  fecha: string;
+  hora_inicio: string;
+  hora_fin: string;
+  capacidad_maxima: number;
+  turnos_agendados: number;
+  activo: boolean;
+}
+
+export interface TurnoMedicamento {
+  id: number;
+  medicamento_id: number;
+  cantidad: number;
+  medicamento?: Medicamento;
+}
+
+export type EstadoTurno = 'Pendiente' | 'Confirmado' | 'Cancelado' | 'Completado';
+
+export interface Turno {
+  id: number;
+  codigo: string;
+  numero_turno: number;
+  usuario_id: number;
+  farmacia_id: number;
+  eps_id: number;
+  horario_id: number;
+  fecha: string;
+  hora: string;
+  estado: EstadoTurno;
+  observaciones?: string;
+  creado_en: string;
+  actualizado_en: string;
+  farmacia?: any;
+  eps_obj?: EPS;
+  medicamentos: TurnoMedicamento[];
+}
+
+export interface MedicamentoSeleccionado {
+  medicamento_id: number;
+  cantidad: number;
+  nombre?: string;
+  unidad?: string;
+}
