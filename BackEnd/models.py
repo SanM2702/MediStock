@@ -123,3 +123,59 @@ class SesionRed(Base):
 
     def __repr__(self):
         return f"<SesionRed(id={self.id}, timestamp={self.timestamp}, latencia_ms={self.latencia_ms})>"
+
+
+class HistorialConsulta(Base):
+    """Modelo de Historial de Consultas de Medicamentos"""
+    __tablename__ = "historial_consultas"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id"), index=True)
+    medicamento_id: Mapped[int] = mapped_column(ForeignKey("medicamentos.id"), index=True)
+    fecha_consulta: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+    # Relaciones
+    usuario: Mapped["Usuario"] = relationship("Usuario")
+    medicamento: Mapped["Medicamento"] = relationship("Medicamento")
+
+    def __repr__(self):
+        return f"<HistorialConsulta(usuario_id={self.usuario_id}, medicamento_id={self.medicamento_id}, fecha={self.fecha_consulta})>"
+
+
+class AlertaStock(Base):
+    """Modelo de Alertas de Stock"""
+    __tablename__ = "alertas_stock"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    inventario_id: Mapped[int] = mapped_column(ForeignKey("inventario.id"), index=True)
+    tipo_alerta: Mapped[str] = mapped_column(String(20))  # stock_bajo, agotado, vencimiento_proximo
+    mensaje: Mapped[str] = mapped_column(String(500))
+    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    resuelta: Mapped[bool] = mapped_column(Boolean, default=False)
+    fecha_resolucion: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    # Relaciones
+    inventario: Mapped["Inventario"] = relationship("Inventario")
+
+    def __repr__(self):
+        return f"<AlertaStock(inventario_id={self.inventario_id}, tipo={self.tipo_alerta}, resuelta={self.resuelta})>"
+
+
+class Notificacion(Base):
+    """Modelo de Notificaciones para Usuarios"""
+    __tablename__ = "notificaciones"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id"), index=True)
+    titulo: Mapped[str] = mapped_column(String(200))
+    mensaje: Mapped[str] = mapped_column(String(1000))
+    tipo: Mapped[str] = mapped_column(String(50))  # info, warning, success, error
+    leida: Mapped[bool] = mapped_column(Boolean, default=False)
+    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    fecha_lectura: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    # Relaciones
+    usuario: Mapped["Usuario"] = relationship("Usuario")
+
+    def __repr__(self):
+        return f"<Notificacion(usuario_id={self.usuario_id}, titulo={self.titulo}, leida={self.leida})>"

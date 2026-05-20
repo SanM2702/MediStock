@@ -39,21 +39,15 @@ app = FastAPI(
 
 # ==================== CORS ====================
 
-from fastapi.middleware.cors import CORSMiddleware
-
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://medi-stock-kx97dc394-santim-projects.vercel.app",
+    "https://medi-stock.vercel.app",
+    "https://medi-stock-1scv3rq9k-santim-projects.vercel.app",
 ]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Permitir cualquier preview deployment de Vercel
+origin_regex = r"https://.*\.vercel\.app"
 
 # ==================== MIDDLEWARE DE LATENCIA Y REQUESTS ====================
 
@@ -90,6 +84,17 @@ async def middleware_monitor(request: Request, call_next):
             content={"detail": "Internal server error"},
             headers={"X-Process-Time": str(latencia)},
         )
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_origin_regex=origin_regex,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
 
 
 # ==================== ROUTERS ====================
