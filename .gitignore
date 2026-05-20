@@ -30,4 +30,5 @@ BackEnd/**/__pycache__/
 BackEnd/*.db
 BackEnd/**/*.pyc
 *.pyc
+*.db
 .env
