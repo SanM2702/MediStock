@@ -25,6 +25,7 @@ from routes import farmacias as farmacias_router
 from routes import inventario as inventario_router
 from routes import network as network_router
 from routes import turnos as turnos_router
+from routes import chat as chat_router 
 
 # Importar utilidades
 from seed import seed_database
