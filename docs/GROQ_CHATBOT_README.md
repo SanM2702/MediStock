@@ -25,7 +25,7 @@ pip install openai
 
 #### Configurar .env:
 ```env
-GROQ_API_KEY=YOUR_API_KEY
+GROQ_API_KEY=
 ```
 
 #### Iniciar servidor:
