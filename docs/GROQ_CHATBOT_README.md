@@ -23,10 +23,6 @@ Se ha implementado un **chatbot con Groq Cloud** en MediStock que:
 pip install openai
 ```
 
-#### Configurar .env:
-```env
-GROQ_API_KEY=
-```
 
 #### Iniciar servidor:
 ```bash
