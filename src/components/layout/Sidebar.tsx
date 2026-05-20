@@ -11,6 +11,8 @@ import {
   Clock,
   Settings,
   Users,
+  CalendarClock,
+  Plus,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -19,11 +21,16 @@ interface SidebarProps {
 
 // ── Estructura de la navegación ────────────────────────────────────────────
 const navPrincipal = [
-  { to: '/',          label: 'Inicio',               Icon: Home    },
-  { to: '/buscar',    label: 'Buscar medicamentos',   Icon: Search  },
-  { to: '/farmacias', label: 'Farmacias',             Icon: MapPin  },
-  { to: '/mi-eps',    label: 'Mi EPS',                Icon: Shield  },
-  { to: '/historial', label: 'Historial',             Icon: Clock   },
+  { to: '/',           label: 'Inicio',               Icon: Home         },
+  { to: '/buscar',     label: 'Buscar medicamentos',   Icon: Search       },
+  { to: '/farmacias',  label: 'Farmacias',             Icon: MapPin       },
+  { to: '/mi-eps',     label: 'Mi EPS',                Icon: Shield       },
+  { to: '/historial',  label: 'Historial',             Icon: Clock        },
+];
+
+const navTurnos = [
+  { to: '/mis-turnos',    label: 'Mis Turnos',    Icon: CalendarClock },
+  { to: '/agendar-turno', label: 'Agendar Turno', Icon: Plus          },
 ];
 
 export default function Sidebar({ isAdmin = false }: SidebarProps) {
@@ -68,9 +75,45 @@ export default function Sidebar({ isAdmin = false }: SidebarProps) {
           ))}
         </div>
 
+        {/* ── Sección Audifarma — Turnos ────────────────────────────────── */}
+        <div className="h-px bg-slate-200 dark:bg-slate-700 my-4" />
+        <div className="mb-6">
+          <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3 px-3">
+            Audifarma · Turnos
+          </p>
+          {navTurnos.map(({ to, label, Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-200 group mb-1 ${
+                  isActive
+                    ? 'bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/30 dark:to-cyan-900/30 text-teal-600 dark:text-teal-400 shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 ${
+                    isActive
+                      ? 'bg-gradient-to-br from-teal-400 to-cyan-500 text-white shadow-md shadow-teal-500/30'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover:bg-slate-200 dark:group-hover:bg-slate-700'
+                  }`}>
+                    <Icon size={18} strokeWidth={isActive ? 2.5 : 1.8} />
+                  </div>
+                  <span className="font-semibold">{label}</span>
+                  {isActive && (
+                    <div className="ml-auto w-2 h-2 rounded-full bg-teal-500 dark:bg-teal-400 shadow-sm shadow-teal-500/50" />
+                  )}
+                </>
+              )}
+            </NavLink>
+          ))}
+        </div>
+
         {/* ── Sección de superusuario ────────────────────────────────────── */}
-        {isAdmin && (
-          <>
+        {isAdmin && (          <>
             <div className="h-px bg-slate-200 dark:bg-slate-700 my-4" />
             <div className="mb-6">
               <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3 px-3">

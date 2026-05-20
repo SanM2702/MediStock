@@ -9,7 +9,7 @@
  */
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, NavLink } from 'react-router-dom';
-import { Home as HomeIcon, Search, Shield, Clock, Settings, Users } from 'lucide-react';
+import { Home as HomeIcon, Search, Shield, Clock, Settings, Users, CalendarClock } from 'lucide-react';
 
 // Contexto de tema
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -34,16 +34,20 @@ import Admin     from './pages/Admin';
 import RedeAdmin from './pages/RedeAdmin';
 import ActivateAccount from './pages/ActivateAccount';
 import ResetPassword from './pages/ResetPassword';
+import AgendarTurno from './pages/AgendarTurno';
+import MisTurnos from './pages/MisTurnos';
+import DetalleTurno from './pages/DetalleTurno';
 
 // Chatbot widget flotante
 import ChatbotWidget from './components/chatbot/ChatbotWidget';
 
 // ── Configuración del Bottom Navbar (mobile) ──────────────────────────────
 const bottomNavItems = [
-  { to: '/',          label: 'Inicio',   Icon: HomeIcon, end: true  },
-  { to: '/buscar',    label: 'Buscar',   Icon: Search,   end: false },
-  { to: '/mi-eps',    label: 'Mi EPS',   Icon: Shield,   end: false },
-  { to: '/historial', label: 'Historial',Icon: Clock,    end: false },
+  { to: '/',           label: 'Inicio',   Icon: HomeIcon,      end: true  },
+  { to: '/buscar',     label: 'Buscar',   Icon: Search,        end: false },
+  { to: '/mis-turnos', label: 'Turnos',   Icon: CalendarClock, end: false },
+  { to: '/mi-eps',     label: 'Mi EPS',   Icon: Shield,        end: false },
+  { to: '/historial',  label: 'Historial',Icon: Clock,         end: false },
 ];
 
 // ── Bottom Navigation Bar (solo mobile/tablet) ────────────────────────────
@@ -137,6 +141,10 @@ function AppLayout() {
             />
             <Route path="/activate/:token" element={<ActivateAccount />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
+            {/* Módulo Audifarma — Turnos */}
+            <Route path="/agendar-turno" element={<AgendarTurno />} />
+            <Route path="/mis-turnos"    element={<MisTurnos />} />
+            <Route path="/turnos/:id"    element={<DetalleTurno />} />
             {/* Cualquier ruta desconocida → Home */}
             <Route path="*"          element={<Navigate to="/" replace />} />
           </Routes>

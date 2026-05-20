@@ -1,6 +1,6 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import Index, ForeignKey, String, Integer, Float, Boolean, DateTime, Numeric
-from datetime import datetime
+from sqlalchemy import Index, ForeignKey, String, Integer, Float, Boolean, DateTime, Numeric, Date, Time, Table, Column
+from datetime import datetime, date, time
 from decimal import Decimal
 from typing import Optional, List
 
@@ -179,3 +179,111 @@ class Notificacion(Base):
 
     def __repr__(self):
         return f"<Notificacion(usuario_id={self.usuario_id}, titulo={self.titulo}, leida={self.leida})>"
+
+
+# ==================== MÓDULO AUDIFARMA — AGENDAMIENTO DE TURNOS ====================
+
+
+class EPS(Base):
+    """Catálogo de EPS disponibles en el sistema"""
+    __tablename__ = "eps"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    nombre: Mapped[str] = mapped_column(String(150), unique=True, index=True)
+    codigo: Mapped[Optional[str]] = mapped_column(String(20), nullable=True, unique=True)
+    activo: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
+    creado_en: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    # Relaciones
+    turnos: Mapped[List["Turno"]] = relationship("Turno", back_populates="eps_obj")
+
+    def __repr__(self):
+        return f"<EPS(id={self.id}, nombre={self.nombre})>"
+
+
+class HorarioDisponible(Base):
+    """Franjas horarias disponibles para agendamiento en cada farmacia"""
+    __tablename__ = "horarios_disponibles"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    farmacia_id: Mapped[int] = mapped_column(ForeignKey("farmacias.id"), index=True)
+    fecha: Mapped[date] = mapped_column(Date, index=True)
+    hora_inicio: Mapped[time] = mapped_column(Time)
+    hora_fin: Mapped[time] = mapped_column(Time)
+    capacidad_maxima: Mapped[int] = mapped_column(Integer, default=1)
+    turnos_agendados: Mapped[int] = mapped_column(Integer, default=0)
+    activo: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
+    creado_en: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    # Relaciones
+    farmacia: Mapped["Farmacia"] = relationship("Farmacia")
+    turnos: Mapped[List["Turno"]] = relationship("Turno", back_populates="horario")
+
+    def __repr__(self):
+        return (
+            f"<HorarioDisponible(farmacia_id={self.farmacia_id}, "
+            f"fecha={self.fecha}, hora={self.hora_inicio})>"
+        )
+
+
+class Turno(Base):
+    """Turno de atención agendado por un paciente en una farmacia"""
+    __tablename__ = "turnos"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    codigo: Mapped[str] = mapped_column(String(20), unique=True, index=True)
+    numero_turno: Mapped[int] = mapped_column(Integer, index=True)
+
+    # Relaciones principales
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id"), index=True)
+    farmacia_id: Mapped[int] = mapped_column(ForeignKey("farmacias.id"), index=True)
+    eps_id: Mapped[int] = mapped_column(ForeignKey("eps.id"), index=True)
+    horario_id: Mapped[int] = mapped_column(ForeignKey("horarios_disponibles.id"), index=True)
+
+    # Datos del turno
+    fecha: Mapped[date] = mapped_column(Date, index=True)
+    hora: Mapped[time] = mapped_column(Time)
+    estado: Mapped[str] = mapped_column(
+        String(20), default="Pendiente", index=True
+    )  # Pendiente, Confirmado, Cancelado, Completado
+    observaciones: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+
+    # Auditoría
+    creado_en: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    actualizado_en: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    # Relaciones ORM
+    usuario: Mapped["Usuario"] = relationship("Usuario")
+    farmacia: Mapped["Farmacia"] = relationship("Farmacia")
+    eps_obj: Mapped["EPS"] = relationship("EPS", back_populates="turnos")
+    horario: Mapped["HorarioDisponible"] = relationship("HorarioDisponible", back_populates="turnos")
+    medicamentos: Mapped[List["TurnoMedicamento"]] = relationship(
+        "TurnoMedicamento",
+        back_populates="turno",
+        cascade="all, delete-orphan",
+    )
+
+    def __repr__(self):
+        return f"<Turno(id={self.id}, codigo={self.codigo}, estado={self.estado})>"
+
+
+class TurnoMedicamento(Base):
+    """Medicamentos asociados a un turno (con descuento temporal de stock)"""
+    __tablename__ = "turno_medicamentos"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    turno_id: Mapped[int] = mapped_column(ForeignKey("turnos.id"), index=True)
+    medicamento_id: Mapped[int] = mapped_column(ForeignKey("medicamentos.id"), index=True)
+    cantidad: Mapped[int] = mapped_column(Integer, default=1)
+
+    # Relaciones ORM
+    turno: Mapped["Turno"] = relationship("Turno", back_populates="medicamentos")
+    medicamento: Mapped["Medicamento"] = relationship("Medicamento")
+
+    def __repr__(self):
+        return (
+            f"<TurnoMedicamento(turno_id={self.turno_id}, "
+            f"medicamento_id={self.medicamento_id}, cantidad={self.cantidad})>"
+        )

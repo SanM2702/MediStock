@@ -3,7 +3,8 @@ from datetime import datetime, date, timedelta
 from database import engine, SessionLocal
 from models import (
     Base, Usuario, Medicamento, Farmacia, Inventario,
-    HistorialConsulta, AlertaStock, Notificacion
+    HistorialConsulta, AlertaStock, Notificacion,
+    EPS, HorarioDisponible,
 )
 from auth import hash_password
 import sys
@@ -770,6 +771,64 @@ def seed_database(reset=False):
         
         print(f"  ✓ Total notificaciones creadas: {notificaciones_creadas}")
         
+        # ==================== CREAR EPS (catálogo) ====================
+        print("\n🏥 Creando catálogo de EPS...")
+
+        eps_creadas = 0
+        for nombre_eps in EPS_LIST:
+            # Evitar duplicados si el seed se ejecuta parcialmente
+            existente = db.query(EPS).filter(EPS.nombre == nombre_eps).first()
+            if not existente:
+                nueva_eps = EPS(nombre=nombre_eps, activo=True)
+                db.add(nueva_eps)
+                eps_creadas += 1
+
+        db.commit()
+        print(f"  ✓ Total EPS creadas: {eps_creadas}")
+
+        # ==================== CREAR HORARIOS DISPONIBLES ====================
+        print("\n🕐 Creando horarios disponibles para las primeras 10 farmacias...")
+
+        from datetime import timedelta as td
+
+        horarios_creados = 0
+        franjas = [
+            ("08:00", "08:30"),
+            ("08:30", "09:00"),
+            ("09:00", "09:30"),
+            ("09:30", "10:00"),
+            ("10:00", "10:30"),
+            ("10:30", "11:00"),
+            ("14:00", "14:30"),
+            ("14:30", "15:00"),
+            ("15:00", "15:30"),
+            ("15:30", "16:00"),
+        ]
+
+        from datetime import time as dtime
+
+        # Crear horarios para los próximos 7 días en las primeras 10 farmacias
+        for farmacia in farmacias[:10]:
+            for dias_adelante in range(1, 8):
+                fecha_horario = date.today() + td(days=dias_adelante)
+                for hora_ini_str, hora_fin_str in franjas:
+                    h_ini = dtime(*map(int, hora_ini_str.split(":")))
+                    h_fin = dtime(*map(int, hora_fin_str.split(":")))
+                    horario = HorarioDisponible(
+                        farmacia_id=farmacia.id,
+                        fecha=fecha_horario,
+                        hora_inicio=h_ini,
+                        hora_fin=h_fin,
+                        capacidad_maxima=random.randint(1, 3),
+                        turnos_agendados=0,
+                        activo=True,
+                    )
+                    db.add(horario)
+                    horarios_creados += 1
+
+        db.commit()
+        print(f"  ✓ Total horarios disponibles creados: {horarios_creados}")
+
         # ==================== RESUMEN ====================
         print("\n" + "="*60)
         print("✅ SEED COMPLETADO EXITOSAMENTE")
