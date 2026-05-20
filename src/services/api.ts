@@ -76,11 +76,7 @@ export const api = {
   },
 
   login: (cedula: string, password: string) => {
-    const params = new URLSearchParams();
-    params.append("cedula", cedula);
-    params.append("password", password);
-    
-    return fetcher<any>(`/auth/login?${params.toString()}`, "POST");
+    return fetcher<any>(`/auth/login`, "POST", { cedula, password });
   },
 
   registro: (datos: {

@@ -5,7 +5,15 @@ from decimal import Decimal
 import re
 
 
+EMAIL_PATTERN = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+
+
 # ==================== USUARIO SCHEMAS ====================
+
+
+class LoginRequest(BaseModel):
+    cedula: str
+    password: str
 
 
 class UsuarioBase(BaseModel):
@@ -22,8 +30,7 @@ class UsuarioBase(BaseModel):
     @field_validator('email')
     @classmethod
     def validate_email(cls, v: str) -> str:
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        if not re.match(pattern, v):
+        if not re.match(EMAIL_PATTERN, v):
             raise ValueError('Email inválido')
         return v
 
@@ -53,8 +60,7 @@ class UsuarioRegistro(BaseModel):
     @field_validator('email')
     @classmethod
     def validate_email(cls, v: str) -> str:
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        if not re.match(pattern, v):
+        if not re.match(EMAIL_PATTERN, v):
             raise ValueError('Email inválido')
         return v
 
@@ -75,8 +81,7 @@ class UsuarioUpdate(BaseModel):
     def validate_email(cls, v: Optional[str]) -> Optional[str]:
         if v is None:
             return v
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        if not re.match(pattern, v):
+        if not re.match(EMAIL_PATTERN, v):
             raise ValueError('Email inválido')
         return v
 
@@ -96,8 +101,7 @@ class ForgotPasswordRequest(BaseModel):
     @field_validator('email')
     @classmethod
     def validate_email(cls, v: str) -> str:
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        if not re.match(pattern, v):
+        if not re.match(EMAIL_PATTERN, v):
             raise ValueError('Email inválido')
         return v
 
@@ -121,8 +125,7 @@ class UsuarioProfileUpdate(BaseModel):
     def validate_email(cls, v: Optional[str]) -> Optional[str]:
         if v is None:
             return v
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        if not re.match(pattern, v):
+        if not re.match(EMAIL_PATTERN, v):
             raise ValueError('Email inválido')
         return v
 
