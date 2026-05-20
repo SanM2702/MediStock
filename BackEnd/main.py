@@ -113,6 +113,7 @@ app.include_router(farmacias_router.router)
 app.include_router(inventario_router.router)
 app.include_router(network_router.router)
 app.include_router(turnos_router.router)
+app.include_router(chat_router.router)
 
 # ==================== HEALTH CHECK ====================
 
