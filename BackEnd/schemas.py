@@ -488,3 +488,36 @@ class TurnoEstadoUpdate(BaseModel):
         if v not in estados_validos:
             raise ValueError(f"Estado inválido. Debe ser uno de: {', '.join(estados_validos)}")
         return v
+
+
+# ==================== MÓDULO HISTORIAL DE ACTIVIDADES ====================
+
+
+class HistorialActividadBase(BaseModel):
+    """Schema base para HistorialActividad"""
+    tipo: str = Field(..., description="Tipo de actividad")
+    descripcion: str = Field(..., max_length=500)
+    metadata_json: Optional[str] = Field(None, max_length=2000, description="JSON opcional con metadata adicional")
+
+
+class HistorialActividadCreate(HistorialActividadBase):
+    """Schema para crear un registro de historial"""
+    pass
+
+
+class HistorialActividadResponse(HistorialActividadBase):
+    """Schema de respuesta para HistorialActividad"""
+    id: int
+    usuario_id: int
+    fecha: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class HistorialResumenResponse(BaseModel):
+    """Schema de respuesta para resumen de historial"""
+    total_actividades: int
+    actividades_por_tipo: dict
+    ultima_actividad: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)

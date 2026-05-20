@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session, selectinload 
 from sqlalchemy import select 
-from typing import List, Optional 
-from database import get_db 
-from models import Medicamento, Inventario, Farmacia 
+from typing import List, Optional
+from database import get_db
+from models import Medicamento, Inventario, Farmacia, HistorialActividad, Usuario
 from schemas import ( 
     MedicamentoCreate, 
     MedicamentoResponse, 
@@ -12,6 +12,7 @@ from schemas import (
 ) 
 from auth import get_current_user_depends, get_admin_user, get_farmaceutico_user
 import unicodedata 
+import json
 
 router = APIRouter(
     prefix="/api/medicamentos",
@@ -67,9 +68,14 @@ async def listar_medicamentos(
     return resultados 
 
 @router.get("/{med_id}", response_model=MedicamentoConInventarioResponse) 
-async def obtener_medicamento(med_id: int, db: Session = Depends(get_db)): 
+async def obtener_medicamento(
+    med_id: int, 
+    db: Session = Depends(get_db),
+    current_user: Optional[Usuario] = Depends(get_current_user_depends),
+): 
     """
     Obtiene un medicamento por ID con su inventario.
+    Registra la actividad si el usuario está autenticado.
     """
     stmt = select(Medicamento).options( 
         selectinload(Medicamento.inventarios).selectinload(Inventario.farmacia) 
@@ -77,6 +83,21 @@ async def obtener_medicamento(med_id: int, db: Session = Depends(get_db)):
     med = db.execute(stmt).scalar_one_or_none() 
     if not med: 
         raise HTTPException(status_code=404, detail="Medicamento no encontrado") 
+    
+    # Registrar actividad de consulta de medicamento
+    if current_user:
+        try:
+            from routes.historial import registrar_actividad
+            registrar_actividad(
+                db=db,
+                usuario_id=current_user.id,
+                tipo="medicamento_consultado",
+                descripcion=f"Consulta del medicamento: {med.nombre}",
+                metadata={"medicamento_id": med.id, "medicamento_nombre": med.nombre},
+            )
+        except Exception:
+            pass  # No fallar si el registro de historial falla
+    
     return med 
 
 @router.post("", response_model=MedicamentoResponse, status_code=201) 

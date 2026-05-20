@@ -9,7 +9,7 @@ import random
 import string
 from datetime import date, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 from typing import List, Optional
@@ -366,6 +366,25 @@ async def crear_turno(
 
     db.commit()
 
+    # Registrar actividad de turno agendado
+    try:
+        from routes.historial import registrar_actividad
+        registrar_actividad(
+            db=db,
+            usuario_id=current_user.id,
+            tipo="turno_agendado",
+            descripcion=f"Turno agendado: {codigo} en {farmacia.nombre}",
+            metadata={
+                "turno_id": nuevo_turno.id,
+                "turno_codigo": codigo,
+                "farmacia_id": farmacia.id,
+                "farmacia_nombre": farmacia.nombre,
+                "fecha": str(horario.fecha),
+            },
+        )
+    except Exception:
+        pass  # No fallar si el registro de historial falla
+
     # Recargar con relaciones para la respuesta
     db.refresh(nuevo_turno)
     stmt = (
@@ -576,3 +595,22 @@ async def cancelar_mi_turno(
 
     turno.estado = "Cancelado"
     db.commit()
+
+    # Registrar actividad de turno cancelado
+    try:
+        from routes.historial import registrar_actividad
+        registrar_actividad(
+            db=db,
+            usuario_id=current_user.id,
+            tipo="turno_cancelado",
+            descripcion=f"Turno cancelado: {turno.codigo}",
+            metadata={
+                "turno_id": turno.id,
+                "turno_codigo": turno.codigo,
+                "farmacia_id": turno.farmacia_id,
+            },
+        )
+    except Exception:
+        pass  # No fallar si el registro de historial falla
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
