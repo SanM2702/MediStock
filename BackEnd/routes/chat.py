@@ -9,10 +9,12 @@ from typing import Union
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 import logging
+from sqlalchemy.orm import Session
 
 from auth import get_current_user_depends
 from models import Usuario
 from services.ai import get_ai_client
+from database import get_db
 
 logger = logging.getLogger("medistock.chat")
 
@@ -74,6 +76,7 @@ class ChatErrorResponse(BaseModel):
 async def chat(
     data: ChatRequest,
     current_user: Usuario = Depends(get_current_user_depends),
+    db: Session = Depends(get_db),
 ):
     """
     Envía un mensaje al chatbot y obtiene una respuesta.
@@ -107,6 +110,19 @@ async def chat(
             message=data.message,
             user_id=current_user.id,
         )
+
+        # Registrar actividad de chat_ia
+        try:
+            from routes.historial import registrar_actividad
+            registrar_actividad(
+                db=db,
+                usuario_id=current_user.id,
+                tipo="chat_ia",
+                descripcion=f"Chat IA: {data.message[:100]}",
+                metadata={"mensaje": data.message, "tokens_used": result.get("tokens_used")},
+            )
+        except Exception:
+            pass  # No fallar si el registro de historial falla
 
         # Log
         logger.info(

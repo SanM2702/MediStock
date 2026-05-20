@@ -287,3 +287,24 @@ class TurnoMedicamento(Base):
             f"<TurnoMedicamento(turno_id={self.turno_id}, "
             f"medicamento_id={self.medicamento_id}, cantidad={self.cantidad})>"
         )
+
+
+# ==================== MÓDULO HISTORIAL DE ACTIVIDADES ====================
+
+
+class HistorialActividad(Base):
+    """Modelo de Historial de Actividades del Usuario"""
+    __tablename__ = "historial_actividades"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id"), index=True)
+    tipo: Mapped[str] = mapped_column(String(50), index=True)  # tipo de actividad
+    descripcion: Mapped[str] = mapped_column(String(500))
+    fecha: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    metadata_json: Mapped[Optional[str]] = mapped_column(String(2000), nullable=True)  # JSON opcional
+
+    # Relación
+    usuario: Mapped["Usuario"] = relationship("Usuario")
+
+    def __repr__(self):
+        return f"<HistorialActividad(id={self.id}, usuario_id={self.usuario_id}, tipo={self.tipo})>"
