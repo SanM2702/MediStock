@@ -22,6 +22,7 @@ class Usuario(Base):
     rol: Mapped[str] = mapped_column(String(20))  # paciente, farmaceutico, admin
     eps: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     telefono: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    foto_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)  # URL de foto de perfil en Cloudinary
     hashed_password: Mapped[str] = mapped_column(String(255))
     activo: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     codigo_activacion: Mapped[Optional[str]] = mapped_column(String(20), nullable=True, unique=True, index=True)

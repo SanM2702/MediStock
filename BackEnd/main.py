@@ -5,6 +5,10 @@ from sqlalchemy import inspect
 import time
 import asyncio
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Cargar variables de entorno desde archivo .env
+load_dotenv()
 
 # Importar database y modelos
 from database import engine

@@ -17,6 +17,7 @@ class UsuarioBase(BaseModel):
     rol: str = Field(..., description="paciente, farmaceutico o admin")
     eps: Optional[str] = Field(None, max_length=100)
     telefono: Optional[str] = Field(None, max_length=20)
+    foto_url: Optional[str] = Field(None, max_length=500)
 
     @field_validator('email')
     @classmethod
@@ -113,6 +114,7 @@ class UsuarioProfileUpdate(BaseModel):
     email: Optional[str] = Field(None)
     eps: Optional[str] = Field(None, max_length=100)
     telefono: Optional[str] = Field(None, max_length=20)
+    foto_url: Optional[str] = Field(None, max_length=500)
 
     @field_validator('email')
     @classmethod

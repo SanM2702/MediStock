@@ -9,7 +9,7 @@
  */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Save, X, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
+import { Save, X, Eye, EyeOff, AlertCircle, CheckCircle, Camera } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../services/api';
 
@@ -29,13 +29,17 @@ interface PasswordState {
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [loadingPassword, setLoadingPassword] = useState(false);
+  const [loadingFoto, setLoadingFoto] = useState(false);
 
   // Estado de edición
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // Estado para foto de perfil
+  const [fotoPreview, setFotoPreview] = useState<string | null>(null);
 
   // Estados de formulario
   const [formData, setFormData] = useState<FormState>({
@@ -78,6 +82,11 @@ export default function ProfilePage() {
       eps: user.eps || '',
       telefono: user.telefono || '',
     });
+
+    // Cargar foto de perfil si existe
+    if (user.foto_url) {
+      setFotoPreview(user.foto_url);
+    }
   }, [user, navigate]);
 
   // Manejadores del formulario de perfil
@@ -89,6 +98,63 @@ export default function ProfilePage() {
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPasswordData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar que sea una imagen
+    if (!file.type.startsWith('image/')) {
+      setMessage({ type: 'error', text: 'El archivo debe ser una imagen' });
+      return;
+    }
+
+    // Validar tamaño máximo (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'La imagen no puede superar 5MB' });
+      return;
+    }
+
+    setLoadingFoto(true);
+    setMessage({ type: '', text: '' });
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Usa la misma base URL que el resto de la app (definida en api.ts)
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+      const token = localStorage.getItem('medistock_token');
+
+      const response = await fetch(`${baseUrl}/usuarios/me/foto`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: `Error ${response.status}` }));
+        throw new Error(error.detail || 'Error al subir la foto');
+      }
+
+      const updatedUser = await response.json();
+      
+      // Actualizar el preview local
+      setFotoPreview(updatedUser.foto_url);
+      
+      // Actualizar el contexto global de autenticación
+      updateUser({ foto_url: updatedUser.foto_url });
+      
+      setMessage({ type: 'success', text: 'Foto de perfil actualizada exitosamente' });
+
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message || 'Error al subir la foto' });
+    } finally {
+      setLoadingFoto(false);
+    }
   };
 
   const handleGuardarPerfil = async () => {
@@ -199,7 +265,7 @@ export default function ProfilePage() {
         {/* ==================== TARJETA SUPERIOR - PERFIL ==================== */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
           {/* Fondo decorativo */}
-          <div className="h-32 bg-gradient-to-r from-primary-500 via-primary-600 to-emerald-500 dark:from-emerald-600 dark:via-emerald-500 dark:to-teal-600 relative overflow-hidden">
+          <div className="h-24 bg-gradient-to-r from-primary-500/80 via-primary-600/80 to-emerald-500/80 dark:from-emerald-600/80 dark:via-emerald-500/80 dark:to-teal-600/80 relative overflow-hidden">
             <div className="absolute inset-0 opacity-10">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.3),transparent_50%)]"></div>
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(255,255,255,0.2),transparent_50%)]"></div>
@@ -207,22 +273,41 @@ export default function ProfilePage() {
           </div>
           
           {/* Contenido del perfil */}
-          <div className="px-6 pb-6">
-            <div className="flex flex-col md:flex-row md:items-end md:gap-6 -mt-16">
+          <div className="px-6 pb-6 pt-4">
+            <div className="flex flex-col md:flex-row md:items-center md:gap-8">
               {/* Avatar circular grande */}
-              <div className="relative">
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary-400 to-emerald-400 dark:from-emerald-500 dark:to-teal-500 p-1 shadow-2xl">
-                  <div className="w-full h-full rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-4xl font-bold text-primary-600 dark:text-emerald-400">
-                    {formData.nombre.charAt(0).toUpperCase()}
-                  </div>
+              <div className="relative flex-shrink-0">
+                <div className="w-28 h-28 rounded-full bg-gradient-to-br from-primary-400 to-emerald-400 dark:from-emerald-500 dark:to-teal-500 p-1.5 shadow-xl">
+                  {fotoPreview ? (
+                    <img
+                      src={fotoPreview}
+                      alt="Foto de perfil"
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-3xl font-bold text-primary-600 dark:text-emerald-400">
+                      {formData.nombre.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </div>
-                <div className="absolute bottom-2 right-2 w-6 h-6 bg-emerald-500 rounded-full border-4 border-white dark:border-slate-800 flex items-center justify-center">
-                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                <div className="absolute bottom-1 right-1 w-5 h-5 bg-emerald-500 rounded-full border-3 border-white dark:border-slate-800 flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
                 </div>
+                {/* Botón para cambiar foto */}
+                <label className="absolute -bottom-2 -right-2 w-10 h-10 bg-white dark:bg-slate-800 rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border-2 border-slate-200 dark:border-slate-600">
+                  <Camera size={18} className="text-slate-600 dark:text-slate-400" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFotoChange}
+                    className="hidden"
+                    disabled={loadingFoto}
+                  />
+                </label>
               </div>
               
               {/* Información del usuario */}
-              <div className="flex-1 mt-4 md:mt-0 md:mb-2">
+              <div className="flex-1 mt-4 md:mt-0">
                 <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-100">
                   {formData.nombre} {formData.apellido}
                 </h1>

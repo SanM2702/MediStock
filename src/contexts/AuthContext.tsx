@@ -11,6 +11,7 @@ interface AuthContextType {
   logout: () => void;
   isAdmin: () => boolean;
   isAuthenticated: boolean;
+  updateUser: (updates: any) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -100,6 +101,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     window.location.href = '/';
   };
 
+  const updateUser = (updates: any) => {
+    const usuarioActualizado = { ...user, ...updates };
+    setUser(usuarioActualizado);
+    localStorage.setItem('user', JSON.stringify(usuarioActualizado));
+  };
+
   const isAdmin = () => user?.rol === 'admin';
   const isAuthenticated = !!user;
 
@@ -110,6 +117,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     registro,
     requestPasswordReset,
     logout,
+    updateUser,
     isAdmin,
     isAuthenticated,
   };

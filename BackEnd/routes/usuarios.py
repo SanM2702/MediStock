@@ -1,7 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from typing import List, Optional
+import os
+import cloudinary
+import cloudinary.uploader
+from io import BytesIO
 
 from database import get_db
 from models import Usuario
@@ -20,6 +24,13 @@ router = APIRouter(
 )
 
 security = HTTPBearer()
+
+# Configurar Cloudinary
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+)
 
 
 def _require_admin(
@@ -154,6 +165,127 @@ def cambiar_contrasena(
         "message": "Contraseña actualizada exitosamente",
         "usuario": UsuarioResponse.model_validate(usuario),
     }
+
+
+@router.post("/me/foto", response_model=UsuarioResponse)
+async def subir_foto_perfil(
+    file: UploadFile = File(...),
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+):
+    """
+    Sube una foto de perfil a Cloudinary y la asocia al usuario.
+    
+    POST /api/usuarios/me/foto
+    
+    Parámetros:
+    - file: Archivo de imagen (JPG, PNG, WebP, máx 5MB)
+    
+    Retorna:
+    - UsuarioResponse con foto_url actualizada
+    
+    Errores:
+    - 401: Token inválido o expirado
+    - 400: Archivo no válido o muy grande
+    - 500: Error al procesar imagen
+    """
+    # 1. Validar autenticación
+    try:
+        usuario = get_current_user(token=credentials.credentials, db=db)
+    except HTTPException:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido o expirado",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # 2. Validar que sea una imagen
+    TIPOS_VALIDOS = {"image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"}
+    if not file.content_type or file.content_type not in TIPOS_VALIDOS:
+        tipos_aceptados = ", ".join(TIPOS_VALIDOS)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Tipo de archivo no válido. Acepta: {tipos_aceptados}. Recibido: {file.content_type}",
+        )
+    
+    # 3. Validar nombre del archivo
+    if not file.filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El archivo debe tener un nombre",
+        )
+    
+    # 4. Validar tamaño máximo (5MB)
+    MAX_SIZE = 5 * 1024 * 1024  # 5MB
+    contenido = await file.read()
+    
+    if len(contenido) > MAX_SIZE:
+        tamaño_mb = len(contenido) / 1024 / 1024
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"La imagen no puede superar 5MB. Tamaño actual: {tamaño_mb:.2f}MB",
+        )
+    
+    # 5. Resetear el pointer del archivo para lectura posterior
+    await file.seek(0)
+    
+    # 6. Verificar que Cloudinary esté configurado
+    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME")
+    api_key = os.getenv("CLOUDINARY_API_KEY")
+    api_secret = os.getenv("CLOUDINARY_API_SECRET")
+    
+    if not cloud_name or not api_key or not api_secret:
+        print("⚠️  ADVERTENCIA: Cloudinary no está configurado correctamente")
+        print(f"   CLOUDINARY_CLOUD_NAME: {'✓' if cloud_name else '✗'}")
+        print(f"   CLOUDINARY_API_KEY: {'✓' if api_key else '✗'}")
+        print(f"   CLOUDINARY_API_SECRET: {'✓' if api_secret else '✗'}")
+        
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Servicio de almacenamiento de imágenes no disponible. "
+                   "Por favor, contacta con el administrador.",
+        )
+    
+    try:
+        # 7. Subir a Cloudinary
+        print(f"Subiendo imagen de {usuario.nombre} {usuario.apellido} a Cloudinary...")
+        
+        # Convertir bytes a BytesIO para Cloudinary
+        file_obj = BytesIO(contenido)
+        
+        upload_result = cloudinary.uploader.upload(
+            file_obj,
+            folder="medistock/perfiles",
+            public_id=f"usuario_{usuario.id}",
+            overwrite=True,
+            crop="limit",
+            width=400,
+            height=400,
+            quality=85,
+            resource_type="auto",
+        )
+        
+        # 8. Actualizar usuario con la URL
+        foto_url = upload_result.get("secure_url")
+        if not foto_url:
+            raise ValueError("No se obtuvo URL segura de Cloudinary")
+        
+        usuario.foto_url = foto_url
+        db.commit()
+        db.refresh(usuario)
+        
+        print(f"✓ Imagen subida correctamente: {foto_url}")
+        return usuario
+        
+    except Exception as e:
+        db.rollback()
+        error_msg = str(e)
+        print(f"❌ Error al subir imagen a Cloudinary: {error_msg}")
+        
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al procesar la imagen: {error_msg}",
+        )
 
 
 # ==================== ENDPOINTS DE ADMINISTRACIÓN ====================
