@@ -27,12 +27,12 @@ export default function Home() {
 
   // Medicamentos con stock limitado
   const stockLimitado = useMemo(() => 
-    medicamentos.filter((m) => m.inventario?.some((f) => f.estado === 'limitado'))
+    medicamentos.filter((m) => m.inventarios?.some((f) => f.estado === 'limitado'))
   , [medicamentos]);
 
   // Medicamentos disponibles (al menos una farmacia disponible)
   const disponibles = useMemo(() => 
-    medicamentos.filter((m) => m.inventario?.some((f) => f.estado === 'disponible'))
+    medicamentos.filter((m) => m.inventarios?.some((f) => f.estado === 'disponible'))
   , [medicamentos]);
 
   return (

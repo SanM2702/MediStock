@@ -20,9 +20,9 @@ def calcular_estado_inventario(stock: int) -> str:
     """
     Calcula automáticamente el estado del inventario según el stock.
     
-    - stock > 20: disponible
-    - 1 <= stock <= 20: limitado
-    - stock == 0: agotado
+    - stock > 5: disponible
+    - 1 <= stock <= 5: limitado
+    - stock <= 0: agotado
     
     Args:
         stock: Cantidad en stock
@@ -30,9 +30,9 @@ def calcular_estado_inventario(stock: int) -> str:
     Returns:
         str: Estado calculado
     """
-    if stock > 20:
+    if stock > 5:
         return "disponible"
-    elif 1 <= stock <= 20:
+    elif 1 <= stock <= 5:
         return "limitado"
     else:
         return "agotado"

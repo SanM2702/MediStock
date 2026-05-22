@@ -8,15 +8,9 @@ import {
   ChevronUp, ChevronDown, Save, X, TrendingUp,
   Users, Activity,
 } from 'lucide-react';
-import { medicamentos as initialMeds } from '../data/meds';
 import type { MedicamentoConFarmacias, EstadoStock } from '../types';
-
-// ── Helpers ───────────────────────────────────────────────────────────────
-function calcEstado(stock: number): EstadoStock {
-  if (stock === 0) return 'agotado';
-  if (stock <= 10) return 'limitado';
-  return 'disponible';
-}
+import { getStockStatus } from '../helpers/stockStatus';
+import { useMedicamentos } from '../hooks/useMedicamentos';
 
 const estadoCls: Record<EstadoStock, string> = {
   disponible: 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800',
@@ -41,21 +35,27 @@ function EstadoBadge({ estado }: { estado: EstadoStock }) {
 type SortKey = 'nombre' | 'stock' | 'municipio';
 
 export default function Admin() {
-  const [meds, setMeds] = useState<MedicamentoConFarmacias[]>(
-    // Copia profunda para no mutar los datos originales
-    initialMeds.map((m) => ({ ...m, farmacias: m.farmacias.map((f) => ({ ...f })) }))
-  );
-  const [editCell, setEditCell] = useState<{ medId: string; farmaciaId: string } | null>(null);
+  const { data: medicamentos } = useMedicamentos();
+  const [meds, setMeds] = useState<MedicamentoConFarmacias[]>([]);
+  const [editCell, setEditCell] = useState<{ medId: number; farmaciaId: number } | null>(null);
   const [editValue, setEditValue] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('nombre');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [saved, setSaved]     = useState(false);
 
+  // Sync meds with API data
+  useMemo(() => {
+    if (medicamentos && medicamentos.length > 0) {
+      console.log('Admin: Loading medications from API:', medicamentos);
+      setMeds(medicamentos);
+    }
+  }, [medicamentos]);
+
   // ── Estadísticas globales ─────────────────────────────────────────────
   const stats = useMemo(() => {
     let disponibles = 0, limitados = 0, agotados = 0, totalUnidades = 0;
     meds.forEach((m) =>
-      m.farmacias.forEach((f) => {
+      (m.inventarios || []).forEach((f) => {
         if (f.estado === 'disponible') disponibles++;
         else if (f.estado === 'limitado') limitados++;
         else agotados++;
@@ -68,13 +68,13 @@ export default function Admin() {
   // ── Filas aplanadas para la tabla ─────────────────────────────────────
   const rows = useMemo(() => {
     const flat = meds.flatMap((m) =>
-      m.farmacias.map((f) => ({ med: m, farmacia: f }))
+      (m.inventarios || []).map((f) => ({ med: m, farmacia: f }))
     );
     flat.sort((a, b) => {
       let cmp = 0;
       if (sortKey === 'nombre')    cmp = a.med.nombre.localeCompare(b.med.nombre);
       if (sortKey === 'stock')     cmp = a.farmacia.stock - b.farmacia.stock;
-      if (sortKey === 'municipio') cmp = a.farmacia.municipio.localeCompare(b.farmacia.municipio);
+      if (sortKey === 'municipio') cmp = a.farmacia.farmacia_municipio.localeCompare(b.farmacia.farmacia_municipio);
       return sortDir === 'asc' ? cmp : -cmp;
     });
     return flat;
@@ -94,7 +94,7 @@ export default function Admin() {
   }
 
   // ── Edición inline ───────────────────────────────────────────────────
-  const beginEdit = (medId: string, farmaciaId: string, current: number) => {
+  const beginEdit = (medId: number, farmaciaId: number, current: number) => {
     setEditCell({ medId, farmaciaId });
     setEditValue(String(current));
   };
@@ -108,9 +108,9 @@ export default function Admin() {
       prev.map((m) =>
         m.id !== editCell.medId ? m : {
           ...m,
-          farmacias: m.farmacias.map((f) =>
-            f.farmaciaId !== editCell.farmaciaId ? f
-              : { ...f, stock: val, estado: calcEstado(val) }
+          inventarios: (m.inventarios || []).map((f) =>
+            f.farmacia_id !== editCell.farmaciaId ? f
+              : { ...f, stock: val, estado: getStockStatus(val) }
           ),
         }
       )
@@ -216,7 +216,7 @@ export default function Admin() {
             <Users size={18} className="text-primary-500 dark:text-emerald-400 flex-shrink-0" />
             <div>
               <p className="font-bold text-slate-800 dark:text-slate-200">
-                {initialMeds.length} medicamentos
+                {medicamentos?.length || 0} medicamentos
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400">En el sistema</p>
             </div>
@@ -269,16 +269,16 @@ export default function Admin() {
           <div className="divide-y divide-slate-50 dark:divide-slate-800">
             {rows.map(({ med, farmacia }) => {
               const isEditing =
-                editCell?.medId === med.id && editCell?.farmaciaId === farmacia.farmaciaId;
+                editCell?.medId === med.id && editCell?.farmaciaId === farmacia.farmacia_id;
 
               return (
                 <div
-                  key={`${med.id}-${farmacia.farmaciaId}`}
+                  key={`${med.id}-${farmacia.farmacia_id}`}
                   className="grid grid-cols-12 px-4 py-3 items-center hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
                 >
                   {/* Medicamento */}
                   <div className="col-span-4 flex items-center gap-2 min-w-0">
-                    <span className="text-xl leading-none flex-shrink-0">{med.icono}</span>
+                    <span className="text-xl leading-none flex-shrink-0">{med.icono || '💊'}</span>
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate leading-tight">
                         {med.nombre}
@@ -291,7 +291,7 @@ export default function Admin() {
 
                   {/* Municipio */}
                   <p className="col-span-3 text-xs text-slate-500 dark:text-slate-400 text-center truncate px-1">
-                    {farmacia.municipio}
+                    {farmacia.farmacia_municipio}
                   </p>
 
                   {/* Stock — editable al hacer clic */}
@@ -327,8 +327,8 @@ export default function Admin() {
                       </div>
                     ) : (
                       <button
-                        id={`stock-${med.id}-${farmacia.farmaciaId}`}
-                        onClick={() => beginEdit(med.id, farmacia.farmaciaId, farmacia.stock)}
+                        id={`stock-${med.id}-${farmacia.farmacia_id}`}
+                        onClick={() => beginEdit(med.id, farmacia.farmacia_id, farmacia.stock)}
                         className="text-sm font-bold text-slate-700 dark:text-slate-300 px-2 py-1 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-emerald-400 transition-colors"
                         title="Clic para editar"
                       >

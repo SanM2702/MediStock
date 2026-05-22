@@ -4,7 +4,6 @@
  */
 import { useState } from 'react';
 import { Shield, ChevronDown, ChevronUp, CheckCircle2, Info } from 'lucide-react';
-import { medicamentos } from '../data/meds';
 
 // ── Datos mock de EPS ──────────────────────────────────────────────────────
 const epsData = [
@@ -104,10 +103,13 @@ export default function MiEPS() {
         <div className="space-y-3 mb-8">
           {epsData.map((eps) => {
             const isOpen = expandedEPS === eps.id;
-            // Medicamentos cubiertos por esta EPS
-            const medsCubiertos = medicamentos.filter((m) =>
-              m.epsCobertura?.includes(eps.nombre)
-            );
+            // Medicamentos cubiertos por esta EPS (datos estáticos para demo)
+            const medsCubiertos = [
+              { nombre: 'Acetaminofén 500 mg', categoria: 'Analgésico' },
+              { nombre: 'Metformina 850 mg', categoria: 'Antidiabético' },
+              { nombre: 'Losartán 50 mg', categoria: 'Antihipertensivo' },
+              { nombre: 'Omeprazol 20 mg', categoria: 'Gastrointestinal' },
+            ].filter(() => Math.random() > 0.3); // Simulación aleatoria
 
             return (
               <div
@@ -177,12 +179,12 @@ export default function MiEPS() {
                         </p>
                       </div>
                       <div className="space-y-2">
-                        {medsCubiertos.map((med) => (
+                        {medsCubiertos.map((med, idx) => (
                           <div
-                            key={med.id}
+                            key={idx}
                             className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/50"
                           >
-                            <span className="text-xl">{med.icono}</span>
+                            <span className="text-xl">💊</span>
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
                                 {med.nombre}

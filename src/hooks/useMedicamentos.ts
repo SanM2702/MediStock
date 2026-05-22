@@ -25,6 +25,7 @@ export const useMedicamentos = (filtros?: { busqueda?: string; categoria?: strin
           ? filtros.estado 
           : undefined,
       });
+      console.log('useMedicamentos: Data received from API:', medicamentos);
       setData(medicamentos);
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : 'Error desconocido';

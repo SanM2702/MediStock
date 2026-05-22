@@ -19,7 +19,7 @@ export const medicamentos: MedicamentoConFarmacias[] = [
     farmacias: [
       { farmaciaId: 'farm-1', nombre: 'Droguería La Esperanza', municipio: 'Chía', distancia: '0.4 km', stock: 320, estado: 'disponible', telefono: '601 863 1200', horario: 'Lun–Dom 7am–10pm' },
       { farmaciaId: 'farm-2', nombre: 'Farmacia Comunal Cajicá', municipio: 'Cajicá', distancia: '3.1 km', stock: 85, estado: 'disponible', telefono: '601 860 0450', horario: 'Lun–Sáb 8am–8pm' },
-      { farmaciaId: 'farm-3', nombre: 'Drogas El Rosal', municipio: 'Zipaquirá', distancia: '14.7 km', stock: 12, estado: 'limitado', telefono: '601 851 2100', horario: 'Lun–Dom 8am–9pm' },
+      { farmaciaId: 'farm-3', nombre: 'Drogas El Rosal', municipio: 'Zipaquirá', distancia: '14.7 km', stock: 12, estado: 'disponible', telefono: '601 851 2100', horario: 'Lun–Dom 8am–9pm' },
     ],
   },
 
@@ -72,7 +72,7 @@ export const medicamentos: MedicamentoConFarmacias[] = [
     farmacias: [
       { farmaciaId: 'farm-1', nombre: 'Droguería La Esperanza', municipio: 'Chía', distancia: '0.4 km', stock: 0, estado: 'agotado', telefono: '601 863 1200', horario: 'Lun–Dom 7am–10pm' },
       { farmaciaId: 'farm-3', nombre: 'Drogas El Rosal', municipio: 'Zipaquirá', distancia: '14.7 km', stock: 140, estado: 'disponible', telefono: '601 851 2100', horario: 'Lun–Dom 8am–9pm' },
-      { farmaciaId: 'farm-5', nombre: 'Droguería Central Sopó', municipio: 'Sopó', distancia: '9.3 km', stock: 8, estado: 'limitado', telefono: '601 862 0033', horario: 'Lun–Dom 7am–9pm' },
+      { farmaciaId: 'farm-5', nombre: 'Droguería Central Sopó', municipio: 'Sopó', distancia: '9.3 km', stock: 8, estado: 'disponible', telefono: '601 862 0033', horario: 'Lun–Dom 7am–9pm' },
     ],
   },
 
@@ -124,7 +124,7 @@ export const medicamentos: MedicamentoConFarmacias[] = [
     descripcion: 'Inhibidor de la ECA para hipertensión e insuficiencia cardíaca.',
     farmacias: [
       { farmaciaId: 'farm-1', nombre: 'Droguería La Esperanza', municipio: 'Chía', distancia: '0.4 km', stock: 75, estado: 'disponible', telefono: '601 863 1200', horario: 'Lun–Dom 7am–10pm' },
-      { farmaciaId: 'farm-6', nombre: 'Farmacia El Carmen', municipio: 'Tabio', distancia: '18.2 km', stock: 9, estado: 'limitado', telefono: '601 858 0012', horario: 'Lun–Sáb 8am–6pm' },
+      { farmaciaId: 'farm-6', nombre: 'Farmacia El Carmen', municipio: 'Tabio', distancia: '18.2 km', stock: 9, estado: 'disponible', telefono: '601 858 0012', horario: 'Lun–Sáb 8am–6pm' },
     ],
   },
 
@@ -157,7 +157,7 @@ export const medicamentos: MedicamentoConFarmacias[] = [
     epsCobertura: ['Sura', 'Sanitas'],
     descripcion: 'Benzodiacepina para ansiedad y epilepsia. Requiere fórmula médica.',
     farmacias: [
-      { farmaciaId: 'farm-1', nombre: 'Droguería La Esperanza', municipio: 'Chía', distancia: '0.4 km', stock: 6, estado: 'limitado', telefono: '601 863 1200', horario: 'Lun–Dom 7am–10pm' },
+      { farmaciaId: 'farm-1', nombre: 'Droguería La Esperanza', municipio: 'Chía', distancia: '0.4 km', stock: 6, estado: 'disponible', telefono: '601 863 1200', horario: 'Lun–Dom 7am–10pm' },
       { farmaciaId: 'farm-3', nombre: 'Drogas El Rosal', municipio: 'Zipaquirá', distancia: '14.7 km', stock: 0, estado: 'agotado', telefono: '601 851 2100', horario: 'Lun–Dom 8am–9pm' },
     ],
   },

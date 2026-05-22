@@ -550,21 +550,21 @@ def seed_database(reset=False):
             medicamentos_farmacia = random.sample(medicamentos, min(num_meds_por_farmacia, len(medicamentos)))
             
             for medicamento in medicamentos_farmacia:
-                # Generar stock con distribución específica:
-                # 10% stock crítico (5-10 unidades)
-                # 5% agotado (0 unidades)
-                # 15% próximo a vencer
-                # 70% normal
-                
+                # Generar stock con distribución variada según regla unificada:
+                # stock <= 0 → agotado
+                # stock 1-5 → limitado
+                # stock > 5 → disponible
+                # Distribución: 20% agotado, 30% limitado, 50% disponible
+
                 rand_val = random.random()
-                if rand_val < 0.05:
+                if rand_val < 0.20:
                     stock = 0
                     estado = "agotado"
-                elif rand_val < 0.15:
-                    stock = random.randint(5, 10)
+                elif rand_val < 0.50:
+                    stock = random.randint(1, 5)
                     estado = "limitado"
                 else:
-                    stock = random.randint(11, 500)
+                    stock = random.randint(6, 500)
                     estado = "disponible"
                 
                 # Fecha de vencimiento entre 30 y 730 días

@@ -7,7 +7,6 @@ import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, SlidersHorizontal, LayoutGrid, List, X, ChevronDown, Loader2, AlertCircle } from 'lucide-react';
 import { useMedicamentos } from '../hooks/useMedicamentos';
-import { categorias as cats } from '../data/meds';
 import { municipios, epsLista } from '../data/farmacias';
 import MedCard from '../components/MedCard';
 import type { EstadoStock } from '../types';
@@ -15,7 +14,6 @@ import type { EstadoStock } from '../types';
 type Orden = 'disponibilidad' | 'nombre' | 'precio-asc' | 'precio-desc';
 type Vista = 'grid' | 'list';
 
-const TODAS = 'Todas';
 const TODOS = 'Todos';
 
 const CATEGORIAS = [
@@ -55,7 +53,7 @@ export default function Buscar() {
 
     // Filtro municipio
     if (municipio !== TODOS) {
-      lista = lista.filter((m) => m.inventario?.some((f: any) => f.farmacia_municipio === municipio));
+      lista = lista.filter((m) => m.inventarios?.some((f: any) => f.farmacia_municipio === municipio));
     }
 
     // Filtro EPS
@@ -65,7 +63,7 @@ export default function Buscar() {
 
     // Filtro estado de stock
     if (estado !== '') {
-      lista = lista.filter((m) => m.inventario?.some((f: any) => f.estado === estado));
+      lista = lista.filter((m) => m.inventarios?.some((f: any) => f.estado === estado));
     }
 
     // Ordenamiento
@@ -75,8 +73,8 @@ export default function Buscar() {
       if (orden === 'precio-desc') return b.precio - a.precio;
       // disponibilidad: disponible > limitado > agotado
       const prioridad = (m: any) => {
-        if (m.inventario?.some((f: any) => f.estado === 'disponible')) return 0;
-        if (m.inventario?.some((f: any) => f.estado === 'limitado')) return 1;
+        if (m.inventarios?.some((f: any) => f.estado === 'disponible')) return 0;
+        if (m.inventarios?.some((f: any) => f.estado === 'limitado')) return 1;
         return 2;
       };
       return prioridad(a) - prioridad(b);

@@ -4,15 +4,14 @@
  */
 import { Clock, Search, Trash2, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { medicamentos } from '../data/meds';
 
 // ── Datos mock de historial ────────────────────────────────────────────────
 const historialMock = [
-  { id: 'h1', medId: 'acetaminofen-500', fecha: '07 may 2026 · 14:32', municipio: 'Chía' },
-  { id: 'h2', medId: 'metformina-850',   fecha: '06 may 2026 · 09:15', municipio: 'Cajicá' },
-  { id: 'h3', medId: 'losartan-50',      fecha: '05 may 2026 · 16:48', municipio: 'Zipaquirá' },
-  { id: 'h4', medId: 'omeprazol-20',     fecha: '04 may 2026 · 11:20', municipio: 'Cajicá' },
-  { id: 'h5', medId: 'insulina-nph',     fecha: '01 may 2026 · 08:05', municipio: 'Chía' },
+  { id: 'h1', medNombre: 'Acetaminofén 500 mg', fecha: '07 may 2026 · 14:32', municipio: 'Chía' },
+  { id: 'h2', medNombre: 'Metformina 850 mg',   fecha: '06 may 2026 · 09:15', municipio: 'Cajicá' },
+  { id: 'h3', medNombre: 'Losartán 50 mg',      fecha: '05 may 2026 · 16:48', municipio: 'Zipaquirá' },
+  { id: 'h4', medNombre: 'Omeprazol 20 mg',     fecha: '04 may 2026 · 11:20', municipio: 'Cajicá' },
+  { id: 'h5', medNombre: 'Insulina NPH',        fecha: '01 may 2026 · 08:05', municipio: 'Chía' },
 ];
 
 export default function Historial() {
@@ -71,43 +70,38 @@ export default function Historial() {
           </div>
         ) : (
           <div className="space-y-2">
-            {historialMock.map((item) => {
-              const med = medicamentos.find((m) => m.id === item.medId);
-              if (!med) return null;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => navigate(`/buscar?q=${encodeURIComponent(med.nombre)}`)}
-                  className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 flex items-center gap-4 hover:shadow-md dark:hover:border-slate-600 active:scale-[0.99] transition-all text-left group"
-                >
-                  {/* Ícono */}
-                  <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-2xl flex-shrink-0">
-                    {med.icono}
-                  </div>
+            {historialMock.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => navigate(`/buscar?q=${encodeURIComponent(item.medNombre)}`)}
+                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 flex items-center gap-4 hover:shadow-md dark:hover:border-slate-600 active:scale-[0.99] transition-all text-left group"
+              >
+                {/* Ícono */}
+                <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-2xl flex-shrink-0">
+                  💊
+                </div>
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm text-slate-900 dark:text-slate-100 truncate">
-                      {med.nombre}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{med.laboratorio}</p>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-slate-400 dark:text-slate-500">
-                      <span className="flex items-center gap-1">
-                        <Clock size={10} /> {item.fecha}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Search size={10} /> {item.municipio}
-                      </span>
-                    </div>
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-slate-900 dark:text-slate-100 truncate">
+                    {item.medNombre}
+                  </p>
+                  <div className="flex items-center gap-3 mt-1 text-xs text-slate-400 dark:text-slate-500">
+                    <span className="flex items-center gap-1">
+                      <Clock size={10} /> {item.fecha}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Search size={10} /> {item.municipio}
+                    </span>
                   </div>
+                </div>
 
-                  <ArrowRight
-                    size={16}
-                    className="text-slate-300 dark:text-slate-600 group-hover:text-primary-500 dark:group-hover:text-emerald-400 transition-colors flex-shrink-0"
-                  />
-                </button>
-              );
-            })}
+                <ArrowRight
+                  size={16}
+                  className="text-slate-300 dark:text-slate-600 group-hover:text-primary-500 dark:group-hover:text-emerald-400 transition-colors flex-shrink-0"
+                />
+              </button>
+            ))}
           </div>
         )}
 

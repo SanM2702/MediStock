@@ -45,10 +45,10 @@ function StatusBadge({ estado }: { estado: EstadoStock }) {
   );
 }
 
-function bestEstado(inventario: MedicamentoConFarmacias['inventario']): EstadoStock {
-  if (!inventario || inventario.length === 0) return 'agotado';
-  if (inventario.some((f) => f.estado === 'disponible')) return 'disponible';
-  if (inventario.some((f) => f.estado === 'limitado')) return 'limitado';
+function bestEstado(inventarios: MedicamentoConFarmacias['inventarios']): EstadoStock {
+  if (!inventarios || inventarios.length === 0) return 'agotado';
+  if (inventarios.some((f) => f.estado === 'disponible')) return 'disponible';
+  if (inventarios.some((f) => f.estado === 'limitado')) return 'limitado';
   return 'agotado';
 }
 
@@ -60,8 +60,8 @@ function formatCOP(precio: number) {
 export default function MedCard({ med, modo = 'card' }: MedCardProps) {
   const [expanded, setExpanded] = useState(false);
 
-  const globalEstado = bestEstado(med.inventario);
-  const farmMasCercana = med.inventario?.[0];
+  const globalEstado = bestEstado(med.inventarios);
+  const farmMasCercana = med.inventarios?.[0];
 
   // ── Vista lista (compacta) ─────────────────────────────────────────────
   if (modo === 'list') {
@@ -100,7 +100,7 @@ export default function MedCard({ med, modo = 'card' }: MedCardProps) {
             {expanded ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
           </div>
         </div>
-        {expanded && <FarmaciaDetail inventario={med.inventario} />}
+        {expanded && <FarmaciaDetail inventarios={med.inventarios} />}
       </article>
     );
   }
@@ -175,7 +175,7 @@ export default function MedCard({ med, modo = 'card' }: MedCardProps) {
       {/* ── Detalle expandido ──────────────────────────────────────── */}
       {expanded && (
         <div className="border-t border-slate-100 dark:border-slate-700">
-          <FarmaciaDetail inventario={med.inventario} />
+          <FarmaciaDetail inventarios={med.inventarios} />
         </div>
       )}
     </article>
@@ -183,8 +183,8 @@ export default function MedCard({ med, modo = 'card' }: MedCardProps) {
 }
 
 // ── Sub-componente: detalle de farmacias ──────────────────────────────────
-function FarmaciaDetail({ inventario }: { inventario: MedicamentoConFarmacias['inventario'] }) {
-  if (!inventario || !Array.isArray(inventario) || inventario.length === 0) {
+function FarmaciaDetail({ inventarios }: { inventarios: MedicamentoConFarmacias['inventarios'] }) {
+  if (!inventarios || !Array.isArray(inventarios) || inventarios.length === 0) {
     return (
       <div className="p-4 text-center text-xs text-slate-500 dark:text-slate-400">
         No hay disponibilidad registrada en farmacias.
@@ -194,7 +194,7 @@ function FarmaciaDetail({ inventario }: { inventario: MedicamentoConFarmacias['i
 
   return (
     <div className="p-4 space-y-3 animate-slide-up">
-      {inventario.map((f) => {
+      {inventarios.map((f) => {
         return (
           <div
             key={f.farmacia_id}
