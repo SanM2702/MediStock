@@ -19,7 +19,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 480
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Security scheme
-security_http = HTTPBearer()
+security_http = HTTPBearer(auto_error=False)
 
 
 def hash_password(password: str) -> str:
@@ -195,22 +195,44 @@ def get_current_user(
 
 
 def get_current_user_depends(
-    credentials: HTTPAuthorizationCredentials = Depends(security_http),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_http),
     db: Session = Depends(get_db),
-) -> Usuario:
+) -> Optional[Usuario]:
     """
     Dependency injection para obtener usuario autenticado.
     Valida el token Bearer del header Authorization.
+    Si no hay token, devuelve None en lugar de lanzar 401.
     
     Returns:
-        Usuario: Usuario autenticado
+        Optional[Usuario]: Usuario autenticado o None
     """
+    if not credentials:
+        return None
+        
     token = credentials.credentials
-    return get_current_user(token, db)
+    try:
+        return get_current_user(token, db)
+    except HTTPException:
+        return None
+
+
+def get_current_user_required(
+    current_user: Optional[Usuario] = Depends(get_current_user_depends),
+) -> Usuario:
+    """
+    Dependency que obliga a estar autenticado.
+    """
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No autenticado",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return current_user
 
 
 def get_admin_user(
-    current_user: Usuario = Depends(get_current_user_depends),
+    current_user: Usuario = Depends(get_current_user_required),
 ) -> Usuario:
     """
     Obtiene el usuario actual si tiene rol de admin.
@@ -234,7 +256,7 @@ def get_admin_user(
 
 
 def get_farmaceutico_user(
-    current_user: Usuario = Depends(get_current_user_depends),
+    current_user: Usuario = Depends(get_current_user_required),
 ) -> Usuario:
     """
     Obtiene el usuario actual si tiene rol de farmacéutico o admin.

@@ -30,6 +30,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem('medistock_token', data.access_token);
       localStorage.setItem('user', JSON.stringify(data.usuario));
       setUser(data.usuario);
+      
+      // Registrar login en el historial
+      try {
+        await api.registrarActividad({
+          tipo: 'login',
+          titulo: 'Inicio de sesión',
+          descripcion: 'Acceso exitoso a MediStock'
+        });
+      } catch (historialErr) {
+        // No interferir si falla el registro del historial
+        console.warn('No se pudo registrar el login:', historialErr);
+      }
+      
       return data.usuario;
     } catch (error) {
       console.error('Login error:', error);

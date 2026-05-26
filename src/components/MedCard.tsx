@@ -6,6 +6,8 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, MapPin, Clock, Phone, Package } from 'lucide-react';
 import type { MedicamentoConFarmacias, EstadoStock } from '../types';
+import { useAuth } from '../hooks/useAuth';
+import { useHistorial } from '../hooks/useHistorial';
 
 interface MedCardProps {
   med: MedicamentoConFarmacias;
@@ -59,9 +61,35 @@ function formatCOP(precio: number) {
 
 export default function MedCard({ med, modo = 'card' }: MedCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const { user } = useAuth();
+  const { registrarActividad } = useHistorial();
 
   const globalEstado = bestEstado(med.inventarios);
   const farmMasCercana = med.inventarios?.[0];
+
+  const handleExpandClick = async () => {
+    const isExpanding = !expanded;
+    setExpanded(isExpanding);
+
+    // Registrar consulta de medicamento si el usuario expande y está autenticado
+    if (isExpanding && user?.id) {
+      try {
+        await registrarActividad({
+          tipo: 'consulta_medicamento',
+          titulo: `Consultó ${med.nombre}`,
+          descripcion: 'Verificó disponibilidad en farmacias',
+          metadata_json: JSON.stringify({
+            medicamento_id: med.id,
+            medicamento_nombre: med.nombre,
+            categoria: med.categoria,
+          }),
+        });
+      } catch (err) {
+        // No interferir si falla el registro del historial
+        console.warn('No se pudo registrar la consulta:', err);
+      }
+    }
+  };
 
   // ── Vista lista (compacta) ─────────────────────────────────────────────
   if (modo === 'list') {
@@ -72,10 +100,10 @@ export default function MedCard({ med, modo = 'card' }: MedCardProps) {
       >
         <div
           className="flex items-center gap-3 p-4 cursor-pointer"
-          onClick={() => setExpanded((v) => !v)}
+          onClick={() => handleExpandClick()}
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && setExpanded((v) => !v)}
+          onKeyDown={(e) => e.key === 'Enter' && handleExpandClick()}
           aria-expanded={expanded}
         >
           {/* Icono */}
@@ -161,7 +189,7 @@ export default function MedCard({ med, modo = 'card' }: MedCardProps) {
         {/* Botón ver disponibilidad */}
         <button
           id={`btn-expand-${med.id}`}
-          onClick={() => setExpanded((v) => !v)}
+          onClick={() => handleExpandClick()}
           className="mt-4 w-full py-2.5 border border-primary-500 dark:border-emerald-500 text-primary-600 dark:text-emerald-400 text-sm font-semibold rounded-xl hover:bg-primary-50 dark:hover:bg-emerald-900/20 active:scale-95 transition-all flex items-center justify-center gap-1.5"
         >
           {expanded ? (

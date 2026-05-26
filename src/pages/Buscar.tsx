@@ -3,10 +3,12 @@
  * Filtros: texto | categoría | municipio | EPS | estado
  * Vista: grid o lista | Orden: disponibilidad | nombre | farmacia
  */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, SlidersHorizontal, LayoutGrid, List, X, ChevronDown, Loader2, AlertCircle } from 'lucide-react';
 import { useMedicamentos } from '../hooks/useMedicamentos';
+import { useAuth } from '../hooks/useAuth';
+import { useHistorial } from '../hooks/useHistorial';
 import { municipios, epsLista } from '../data/farmacias';
 import MedCard from '../components/MedCard';
 import type { EstadoStock } from '../types';
@@ -29,6 +31,9 @@ const CATEGORIAS = [
 
 export default function Buscar() {
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  const { registrarActividad } = useHistorial();
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   // Estados de filtros
   const [query, setQuery]             = useState(searchParams.get('q') ?? '');
@@ -46,6 +51,39 @@ export default function Buscar() {
     categoria: categoria || undefined,
     estado: estado || undefined
   });
+
+  // ── Registrar búsquedas con debounce ───────────────────────────────────
+  useEffect(() => {
+    if (!user?.id || !query.trim()) return;
+
+    // Limpiar timer anterior
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    // Registrar después de 1 segundo de inactividad
+    debounceTimer.current = setTimeout(() => {
+      if (medicamentos.length > 0) {
+        registrarActividad({
+          tipo: 'busqueda',
+          titulo: `Buscó "${query}"`,
+          metadata_json: JSON.stringify({
+            query,
+            resultados: medicamentos.length
+          })
+        }).catch(err => {
+          // No interferir si falla
+          console.warn('No se pudo registrar la búsqueda:', err);
+        });
+      }
+    }, 1000);
+
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, [query, medicamentos.length, user?.id, registrarActividad]);
 
   // ── Filtrado y ordenamiento (Local para filtros no soportados por API) ──
   const resultados = useMemo(() => {

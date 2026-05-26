@@ -282,3 +282,25 @@ class Turno(Base):
     creado_en: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     usuario: Mapped["Usuario"] = relationship()
     sede: Mapped["SedeFarmaceutica"] = relationship(back_populates="turnos")
+
+
+class HistorialActividad(Base):
+    """Modelo de Historial de Actividad del Usuario - Todas las acciones del usuario"""
+    __tablename__ = "historial_actividad"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id"), index=True)
+    tipo: Mapped[str] = mapped_column(String(50), index=True)
+    # tipos: 'consulta_medicamento', 'turno_agendado', 'turno_cancelado',
+    # 'cambio_perfil', 'chat_ia', 'busqueda', 'login'
+    titulo: Mapped[str] = mapped_column(String(200))
+    descripcion: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    metadata_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # JSON con datos extra: medicamento_id, farmacia, query, etc
+    creado_en: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    
+    # Relaciones
+    usuario: Mapped["Usuario"] = relationship("Usuario")
+
+    def __repr__(self):
+        return f"<HistorialActividad(usuario_id={self.usuario_id}, tipo={self.tipo}, creado_en={self.creado_en})>"

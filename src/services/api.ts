@@ -222,4 +222,43 @@ export const api = {
   cancelarTurno: (id: number) => {
     return fetcher<void>(`/turnos/${id}`, "DELETE");
   },
+
+  // ==================== HISTORIAL ====================
+
+  getHistorial: (filtros?: {
+    tipo?: string;
+    fecha_desde?: string;
+    fecha_hasta?: string;
+    limite?: number;
+  }) => {
+    const params = new URLSearchParams();
+    if (filtros?.tipo) params.append("tipo", filtros.tipo);
+    if (filtros?.fecha_desde) params.append("fecha_desde", filtros.fecha_desde);
+    if (filtros?.fecha_hasta) params.append("fecha_hasta", filtros.fecha_hasta);
+    if (filtros?.limite) params.append("limite", String(filtros.limite));
+
+    const query = params.toString();
+    return fetcher<any>(`/historial${query ? `?${query}` : ""}`);
+  },
+
+  getResumenHistorial: () => {
+    return fetcher<any>("/historial/resumen");
+  },
+
+  registrarActividad: (datos: {
+    tipo: string;
+    titulo: string;
+    descripcion?: string;
+    metadata_json?: string;
+  }) => {
+    return fetcher<any>("/historial", "POST", datos);
+  },
+
+  eliminarActividad: (id: number) => {
+    return fetcher<void>(`/historial/${id}`, "DELETE");
+  },
+
+  limpiarHistorial: () => {
+    return fetcher<any>("/historial?confirmar=true", "DELETE");
+  },
 };
