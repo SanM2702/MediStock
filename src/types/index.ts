@@ -107,7 +107,7 @@ export interface MedicamentoConFarmacias {
   icono?: string;
   epsCobertura?: string[];
   descripcion?: string;
-  inventario: ItemInventario[];
+  inventarios: ItemInventario[];
 }
 
 // ── Tarjeta de estadística (panel Admin) ─────────────────────────────────────

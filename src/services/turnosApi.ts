@@ -3,9 +3,20 @@
  * Extiende el cliente HTTP existente (fetcher) sin modificar api.ts
  */
 
-import type { EPSTurno, HorarioDisponible, Turno, TurnoCreatePayload } from '../types/turnos';
+import type { RedFarmaceutica, SedeFarmaceutica, SlotResponse, Turno, TurnoCreatePayload } from '../types/turnos';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
+// Helper to capitalize estado values from backend
+function capitalizeEstado(estado: string): string {
+  const map: Record<string, string> = {
+    'pendiente': 'Pendiente',
+    'confirmado': 'Confirmado',
+    'cancelado': 'Cancelado',
+    'completado': 'Completado',
+  };
+  return map[estado.toLowerCase()] || estado;
+}
 
 const getHeaders = () => {
   const token = localStorage.getItem('medistock_token');
@@ -47,28 +58,47 @@ async function fetcher<T>(endpoint: string, method = 'GET', body?: unknown): Pro
 }
 
 export const turnosApi = {
-  // ── EPS ──────────────────────────────────────────────────────────────────
-  getEPS: () => fetcher<EPSTurno[]>('/eps?activo=true'),
+  // ── Redes Farmacéuticas ──────────────────────────────────────────────────
+  getRedes: () => fetcher<RedFarmaceutica[]>('/turnos/redes'),
+  
+  getRedesPorEps: (epsNombre: string) => 
+    fetcher<RedFarmaceutica[]>(`/turnos/eps/${encodeURIComponent(epsNombre)}/redes`),
 
-  // ── Horarios disponibles ─────────────────────────────────────────────────
-  getHorariosDisponibles: (farmacia_id: number, fecha: string) =>
-    fetcher<HorarioDisponible[]>(
-      `/horarios-disponibles?farmacia_id=${farmacia_id}&fecha=${fecha}&solo_disponibles=true`
-    ),
+  // ── Sedes Farmacéuticas ──────────────────────────────────────────────────
+  getSedes: (filtros?: { red_id?: number; municipio?: string }) => {
+    const params = new URLSearchParams();
+    if (filtros?.red_id) params.append('red_id', String(filtros.red_id));
+    if (filtros?.municipio) params.append('municipio', filtros.municipio);
+    const q = params.toString();
+    return fetcher<SedeFarmaceutica[]>(`/turnos/sedes${q ? `?${q}` : ''}`);
+  },
+
+  // ── Slots de Horarios ────────────────────────────────────────────────────
+  getSlots: (sedeId: number, fecha: string) =>
+    fetcher<SlotResponse[]>(`/turnos/slots?sede_id=${sedeId}&fecha=${fecha}`),
 
   // ── Turnos ───────────────────────────────────────────────────────────────
   crearTurno: (payload: TurnoCreatePayload) =>
     fetcher<Turno>('/turnos', 'POST', payload),
 
-  getMisTurnos: (filtros?: { estado?: string; fecha?: string }) => {
-    const params = new URLSearchParams();
-    if (filtros?.estado) params.append('estado', filtros.estado);
-    if (filtros?.fecha) params.append('fecha', filtros.fecha);
-    const q = params.toString();
-    return fetcher<Turno[]>(`/mis-turnos${q ? `?${q}` : ''}`);
+  getMisTurnos: async () => {
+    const turnos = await fetcher<Turno[]>('/turnos/mis-turnos');
+    // Normalize backend data to match frontend expectations
+    return turnos.map(t => ({
+      ...t,
+      estado: capitalizeEstado(t.estado),
+    }));
   },
 
-  getTurno: (id: number) => fetcher<Turno>(`/turnos/${id}`),
+  getTurno: async (id: number) => {
+    const turnos = await fetcher<Turno[]>('/turnos/mis-turnos');
+    const found = turnos.find(t => t.id === id);
+    if (!found) throw new Error("Turno no encontrado");
+    return {
+      ...found,
+      estado: capitalizeEstado(found.estado),
+    };
+  },
 
   cancelarTurno: (id: number) => fetcher<void>(`/turnos/${id}`, 'DELETE'),
 };

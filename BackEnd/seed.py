@@ -4,7 +4,7 @@ from database import engine, SessionLocal
 from models import (
     Base, Usuario, Medicamento, Farmacia, Inventario,
     HistorialConsulta, AlertaStock, Notificacion,
-    EPS, HorarioDisponible,
+    EPS, HorarioDisponible, RedFarmaceutica, SedeFarmaceutica, EpsRedConvenio, Turno
 )
 from auth import hash_password
 import sys
@@ -828,6 +828,217 @@ def seed_database(reset=False):
 
         db.commit()
         print(f"  ✓ Total horarios disponibles creados: {horarios_creados}")
+
+        # ==================== CREAR REDES, SEDES Y CONVENIOS (NUEVO) ====================
+        print("\n🌐 Creando Redes, Sedes y Convenios para Sabana Centro...")
+        
+        # 1. Redes Farmacéuticas
+        redes_data = [
+            {"id": 1, "slug": "audifarma", "nombre": "Audifarma"},
+            {"id": 2, "slug": "cruz_verde", "nombre": "Cruz Verde"},
+            {"id": 3, "slug": "colsubsidio", "nombre": "Colsubsidio"},
+            {"id": 4, "slug": "cafam", "nombre": "Cafam"}
+        ]
+        for r in redes_data:
+            existente = db.query(RedFarmaceutica).filter(RedFarmaceutica.slug == r["slug"]).first()
+            if not existente:
+                nueva_red = RedFarmaceutica(id=r["id"], nombre=r["nombre"], slug=r["slug"], activo=True)
+                db.add(nueva_red)
+        db.commit()
+        print("  ✓ Redes creadas.")
+
+        # 2. Convenios EPS-Red
+        convenios_data = [
+            ("Nueva EPS", 1),       # audifarma
+            ("Sanitas", 2),         # cruz_verde
+            ("Sura", 2),            # cruz_verde
+            ("Sura", 3),            # colsubsidio
+            ("Compensar", 1),       # audifarma
+            ("Capital Salud", 1),   # audifarma
+            ("Coosalud", 1),        # audifarma
+            ("Famisanar", 4),       # cafam
+            ("Famisanar", 3),       # colsubsidio
+            ("Salud Total", 1),     # audifarma
+            ("Salud Total", 2)      # cruz_verde
+        ]
+        for eps_n, red_i in convenios_data:
+            existente = db.query(EpsRedConvenio).filter(EpsRedConvenio.eps_nombre == eps_n, EpsRedConvenio.red_id == red_i).first()
+            if not existente:
+                nuevo_conv = EpsRedConvenio(eps_nombre=eps_n, red_id=red_i, es_principal=True)
+                db.add(nuevo_conv)
+        db.commit()
+        print("  ✓ Convenios creados.")
+
+        # 3. Sedes Farmacéuticas reales de Sabana Centro
+        # Con ID explícito para poder sincronizarlos con la tabla Farmacia
+        sedes_real_data = [
+            # Audifarma (red_id = 1)
+            {
+                "id": 101, "red_id": 1, "nombre": "Audifarma - Chía CAF Los Sauces", "municipio": "Chía",
+                "direccion": "Diagonal 13 #1-20 Este", "telefono": "8620000",
+                "horario_apertura": "00:00", "horario_cierre": "23:59", "atiende_sabado": True, "atiende_domingo": True
+            },
+            {
+                "id": 102, "red_id": 1, "nombre": "Audifarma - Cajicá (Remisión CAF Los Sauces)", "municipio": "Cajicá",
+                "direccion": "Diagonal 13 #1-20 Este (Chía)", "telefono": "8620000",
+                "horario_apertura": "07:00", "horario_cierre": "17:00", "atiende_sabado": True,
+                "horario_sabado_apertura": "07:00", "horario_sabado_cierre": "15:00", "atiende_domingo": False
+            },
+            {
+                "id": 103, "red_id": 1, "nombre": "Audifarma - Zipaquirá CAF Zipaquirá", "municipio": "Zipaquirá",
+                "direccion": "Calle 2 #10-25", "telefono": "8510000",
+                "horario_apertura": "06:00", "horario_cierre": "18:00", "atiende_sabado": True,
+                "horario_sabado_apertura": "08:00", "horario_sabado_cierre": "14:00", "atiende_domingo": False
+            },
+            {
+                "id": 104, "red_id": 1, "nombre": "Audifarma - Cogua (Remisión CAF Zipaquirá)", "municipio": "Cogua",
+                "direccion": "Calle 2 #10-25 (Zipaquirá)", "telefono": "8510000",
+                "horario_apertura": "06:00", "horario_cierre": "18:00", "atiende_sabado": True,
+                "horario_sabado_apertura": "08:00", "horario_sabado_cierre": "14:00", "atiende_domingo": False
+            },
+            {
+                "id": 105, "red_id": 1, "nombre": "Audifarma - Sopó (Remisión CAF Zipaquirá)", "municipio": "Sopó",
+                "direccion": "Calle 2 #10-25 (Zipaquirá)", "telefono": "8510000",
+                "horario_apertura": "06:00", "horario_cierre": "18:00", "atiende_sabado": True,
+                "horario_sabado_apertura": "08:00", "horario_sabado_cierre": "14:00", "atiende_domingo": False
+            },
+            {
+                "id": 106, "red_id": 1, "nombre": "Audifarma - Tabio (Remisión CAF Los Sauces)", "municipio": "Tabio",
+                "direccion": "Diagonal 13 #1-20 Este (Chía)", "telefono": "8620000",
+                "horario_apertura": "00:00", "horario_cierre": "23:59", "atiende_sabado": True, "atiende_domingo": True
+            },
+            # Audifarma - Sede Compensar Chía
+            {
+                "id": 107, "red_id": 1, "nombre": "Audifarma - Compensar Chía", "municipio": "Chía",
+                "direccion": "Carrera 7 este vía Cajicá, Torre Barcelona locales 5-8", "telefono": "8630000",
+                "horario_apertura": "07:00", "horario_cierre": "19:00", "atiende_sabado": True, "atiende_domingo": False
+            },
+            # Cruz Verde (red_id = 2)
+            {
+                "id": 108, "red_id": 2, "nombre": "Cruz Verde - Chía Centro C.C. Centro Chía", "municipio": "Chía",
+                "direccion": "C.C. Centro Chía, Av. Pradilla #900 Este", "telefono": "8615000",
+                "horario_apertura": "07:00", "horario_cierre": "21:30", "atiende_sabado": True, "atiende_domingo": True
+            },
+            {
+                "id": 109, "red_id": 2, "nombre": "Cruz Verde - Chía Carrera 2", "municipio": "Chía",
+                "direccion": "Carrera 2 Este #32-34", "telefono": "8615001",
+                "horario_apertura": "07:00", "horario_cierre": "21:30", "atiende_sabado": True, "atiende_domingo": True
+            },
+            {
+                "id": 110, "red_id": 2, "nombre": "Cruz Verde - Cajicá Centro", "municipio": "Cajicá",
+                "direccion": "Carrera 4 #095, El Tejar", "telefono": "8660000",
+                "horario_apertura": "07:00", "horario_cierre": "21:30", "atiende_sabado": True, "atiende_domingo": True
+            },
+            {
+                "id": 111, "red_id": 2, "nombre": "Cruz Verde - Zipaquirá Metro C.C. Mega City", "municipio": "Zipaquirá",
+                "direccion": "Calle 8 #21-42 C.C. Mega City", "telefono": "8520000",
+                "horario_apertura": "08:00", "horario_cierre": "21:00", "atiende_sabado": True, "atiende_domingo": True
+            },
+            {
+                "id": 112, "red_id": 2, "nombre": "Cruz Verde - Zipaquirá Carrera 9", "municipio": "Zipaquirá",
+                "direccion": "Carrera 9 #4-67", "telefono": "8520001",
+                "horario_apertura": "08:00", "horario_cierre": "17:00", "atiende_sabado": False, "atiende_domingo": False
+            },
+            {
+                "id": 113, "red_id": 2, "nombre": "Cruz Verde - Zipaquirá Calle 4", "municipio": "Zipaquirá",
+                "direccion": "Calle 4 #15-70", "telefono": "8520002",
+                "horario_apertura": "07:00", "horario_cierre": "21:30", "atiende_sabado": True, "atiende_domingo": True
+            },
+            # Colsubsidio (red_id = 3)
+            {
+                "id": 114, "red_id": 3, "nombre": "Colsubsidio - Chía Centro", "municipio": "Chía",
+                "direccion": "Carrera 10 #11-45", "telefono": "8623000",
+                "horario_apertura": "07:00", "horario_cierre": "19:00", "atiende_sabado": True, "atiende_domingo": True,
+                "horario_sabado_apertura": "07:00", "horario_sabado_cierre": "19:00"
+            },
+            {
+                "id": 115, "red_id": 3, "nombre": "Colsubsidio - Zipaquirá Centro", "municipio": "Zipaquirá",
+                "direccion": "Carrera 10 #5-20", "telefono": "8513000",
+                "horario_apertura": "07:00", "horario_cierre": "19:00", "atiende_sabado": True, "atiende_domingo": True,
+                "horario_sabado_apertura": "07:00", "horario_sabado_cierre": "19:00"
+            },
+            # Cafam (red_id = 4)
+            {
+                "id": 116, "red_id": 4, "nombre": "Cafam - Chía Centro", "municipio": "Chía",
+                "direccion": "Calle 12 #8-22", "telefono": "8624000",
+                "horario_apertura": "07:00", "horario_cierre": "19:00", "atiende_sabado": True, "atiende_domingo": False,
+                "horario_sabado_apertura": "08:00", "horario_sabado_cierre": "14:00"
+            },
+            {
+                "id": 117, "red_id": 4, "nombre": "Cafam - Zipaquirá Centro", "municipio": "Zipaquirá",
+                "direccion": "Carrera 7 #6-30", "telefono": "8514000",
+                "horario_apertura": "07:00", "horario_cierre": "19:00", "atiende_sabado": True, "atiende_domingo": False,
+                "horario_sabado_apertura": "08:00", "horario_sabado_cierre": "14:00"
+            }
+        ]
+
+        # Insertar sedes y farmacias equivalentes y añadir inventarios de stock
+        for s in sedes_real_data:
+            # Sede
+            existente_sede = db.query(SedeFarmaceutica).filter(SedeFarmaceutica.id == s["id"]).first()
+            if not existente_sede:
+                nueva_sede = SedeFarmaceutica(
+                    id=s["id"],
+                    red_id=s["red_id"],
+                    nombre=s["nombre"],
+                    municipio=s["municipio"],
+                    direccion=s["direccion"],
+                    telefono=s["telefono"],
+                    horario_apertura=s["horario_apertura"],
+                    horario_cierre=s["horario_cierre"],
+                    atiende_sabado=s["atiende_sabado"],
+                    atiende_domingo=s["atiende_domingo"],
+                    horario_sabado_apertura=s.get("horario_sabado_apertura"),
+                    horario_sabado_cierre=s.get("horario_sabado_cierre"),
+                    activo=True
+                )
+                db.add(nueva_sede)
+                
+            # Farmacia equivalente (mismo ID para que coincidan las relaciones de Inventario)
+            existente_farma = db.query(Farmacia).filter(Farmacia.id == s["id"]).first()
+            if not existente_farma:
+                nueva_farma = Farmacia(
+                    id=s["id"],
+                    nombre=s["nombre"],
+                    municipio=s["municipio"],
+                    direccion=s["direccion"],
+                    telefono=s["telefono"] or "0000000",
+                    horario_apertura=s["horario_apertura"],
+                    horario_cierre=s["horario_cierre"],
+                    eps_convenio="Todas",
+                    activo=True
+                )
+                db.add(nueva_farma)
+        db.commit()
+        print("  ✓ Sedes y farmacias equivalentes creadas.")
+
+        # 4. Crear inventarios para las sedes creadas
+        print("📦 Creando inventario de stock para las sedes reales...")
+        inventarios_nuevos_count = 0
+        for s in sedes_real_data:
+            # Asignar un stock a TODOS los medicamentos disponibles para cada una de las sedes
+            for med in medicamentos:
+                # Evitar duplicados
+                existente_inv = db.query(Inventario).filter(
+                    Inventario.medicamento_id == med.id,
+                    Inventario.farmacia_id == s["id"]
+                ).first()
+                if not existente_inv:
+                    stock_qty = random.randint(15, 150)
+                    estado_inv = "disponible" if stock_qty > 5 else "limitado"
+                    
+                    inv = Inventario(
+                        medicamento_id=med.id,
+                        farmacia_id=s["id"],
+                        stock=stock_qty,
+                        estado=estado_inv,
+                        lote=f"LOT-{random.randint(100,999)}",
+                        fecha_vencimiento=datetime.utcnow() + timedelta(days=random.randint(365, 730))
+                    )
+                    db.add(inv)
+                    inventarios_nuevos_count += 1
+        db.commit()
+        print(f"  ✓ {inventarios_nuevos_count} registros de inventario asignados a las sedes.")
 
         # ==================== RESUMEN ====================
         print("\n" + "="*60)

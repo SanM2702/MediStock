@@ -176,43 +176,47 @@ export const api = {
     return fetcher<any>(`/usuarios/${id}`, "DELETE");
   },
 
-  // ==================== MÓDULO AUDIFARMA — TURNOS ====================
+  // ==================== MÓDULO REDES Y TURNOS ACTUALIZADOS ====================
 
-  getEPS: (filtros?: { activo?: boolean }) => {
-    const params = new URLSearchParams();
-    if (filtros?.activo !== undefined) params.append("activo", String(filtros.activo));
-    const query = params.toString();
-    return fetcher<any[]>(`/eps${query ? `?${query}` : ""}`);
+  getRedes: () => {
+    return fetcher<any[]>("/turnos/redes");
   },
 
-  getHorariosDisponibles: (filtros?: { farmacia_id?: number; fecha?: string }) => {
+  getRedesPorEps: (epsNombre: string) => {
+    return fetcher<any[]>(`/turnos/eps/${encodeURIComponent(epsNombre)}/redes`);
+  },
+
+  getSedes: (filtros?: { red_id?: number; municipio?: string }) => {
     const params = new URLSearchParams();
-    if (filtros?.farmacia_id) params.append("farmacia_id", String(filtros.farmacia_id));
-    if (filtros?.fecha) params.append("fecha", filtros.fecha);
+    if (filtros?.red_id) params.append("red_id", String(filtros.red_id));
+    if (filtros?.municipio) params.append("municipio", filtros.municipio);
     const query = params.toString();
-    return fetcher<any[]>(`/horarios-disponibles${query ? `?${query}` : ""}`);
+    return fetcher<any[]>(`/turnos/sedes${query ? `?${query}` : ""}`);
+  },
+
+  getSlots: (sedeId: number, fecha: string) => {
+    const params = new URLSearchParams();
+    params.append("sede_id", String(sedeId));
+    params.append("fecha", fecha);
+    const query = params.toString();
+    return fetcher<any[]>(`/turnos/slots?${query}`);
   },
 
   crearTurno: (datos: {
-    farmacia_id: number;
-    eps_id: number;
-    horario_id: number;
-    medicamentos: { medicamento_id: number; cantidad: number }[];
-    observaciones?: string;
+    sede_id: number;
+    eps_solicitante: string;
+    numero_afiliado?: string;
+    fecha: string;
+    hora_inicio: string;
+    hora_fin: string;
+    medicamentos?: { medicamento_id: number; cantidad: number; nombre: string; icono?: string }[];
+    notas?: string;
   }) => {
-    return fetcher<any>(`/turnos`, "POST", datos);
+    return fetcher<any>("/turnos", "POST", datos);
   },
 
-  getMisTurnos: (filtros?: { estado?: string; fecha?: string }) => {
-    const params = new URLSearchParams();
-    if (filtros?.estado) params.append("estado", filtros.estado);
-    if (filtros?.fecha) params.append("fecha", filtros.fecha);
-    const query = params.toString();
-    return fetcher<any[]>(`/mis-turnos${query ? `?${query}` : ""}`);
-  },
-
-  getTurno: (id: number) => {
-    return fetcher<any>(`/turnos/${id}`);
+  getMisTurnos: () => {
+    return fetcher<any[]>("/turnos/mis-turnos");
   },
 
   cancelarTurno: (id: number) => {
