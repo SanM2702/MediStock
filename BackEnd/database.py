@@ -1,65 +1,36 @@
-from pathlib import Path
-import tempfile
-
-from sqlalchemy import create_engine, Engine
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import StaticPool
 import os
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
-# Configurar la URL de la base de datos.
-# En Render se puede usar, por ejemplo:
-# DATABASE_URL=sqlite:////var/data/medistock.db
-DEFAULT_DB_PATH = Path(__file__).resolve().parent / "medistock.db"
-DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DEFAULT_DB_PATH}").strip()
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "sqlite:///./medistock.db"  # fallback local
+)
 
+# PostgreSQL en Render viene como postgres:// pero SQLAlchemy necesita postgresql://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-def _ensure_sqlite_directory(database_url: str) -> None:
-    if not database_url.startswith("sqlite:///"):
-        return
-
-    db_path = database_url.replace("sqlite:///", "", 1)
-    if not db_path or db_path == ":memory:":
-        return
-
-    Path(db_path).expanduser().parent.mkdir(parents=True, exist_ok=True)
-
-
-try:
-    _ensure_sqlite_directory(DATABASE_URL)
-except OSError as exc:
-    fallback_path = Path(tempfile.gettempdir()) / "medistock.db"
-    print(
-        f"WARNING: Could not prepare SQLite directory for {DATABASE_URL}: {exc}. "
-        f"Using sqlite:///{fallback_path}"
-    )
-    DATABASE_URL = f"sqlite:///{fallback_path}"
-    _ensure_sqlite_directory(DATABASE_URL)
-
-engine_kwargs = {}
+# Configurar engine según el tipo de base de datos
 if DATABASE_URL.startswith("sqlite"):
-    engine_kwargs["connect_args"] = {"check_same_thread": False}
-    engine_kwargs["poolclass"] = StaticPool
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False}
+    )
+else:
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True,
+        pool_size=5,
+        max_overflow=10
+    )
 
-engine: Engine = create_engine(
-    DATABASE_URL,
-    **engine_kwargs,
-)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Crear la sesión
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
-)
+class Base(DeclarativeBase):
+    pass
 
-
-def get_db() -> Session:
-    """
-    Dependency injection para obtener una sesión de base de datos.
-    
-    Yields:
-        Session: Sesión de SQLAlchemy
-    """
+def get_db():
     db = SessionLocal()
     try:
         yield db

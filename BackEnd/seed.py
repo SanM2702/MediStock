@@ -77,12 +77,6 @@ def seed_database(reset=False):
     Carga datos iniciales en la base de datos.
     """
     
-    if reset:
-        reset_database()
-    else:
-        # Crear todas las tablas si no existen
-        Base.metadata.create_all(bind=engine)
-    
     db = SessionLocal()
     
     try:
@@ -90,8 +84,14 @@ def seed_database(reset=False):
         if not reset:
             usuarios_count = db.query(Usuario).count()
             if usuarios_count > 0:
-                print("✓ Base de datos ya contiene datos. Omitiendo seed.")
+                print("✓ Base de datos ya contiene datos")
                 return
+        
+        if reset:
+            reset_database()
+        else:
+            # Crear todas las tablas si no existen
+            Base.metadata.create_all(bind=engine)
         
         print("\n" + "="*60)
         print("INICIANDO SEED DE BASE DE DATOS DE MEDISTOCK")

@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from contextlib import asynccontextmanager
 import logging
 import time
 import asyncio
@@ -14,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("medistock")
 
 # Importar database y modelos
-from database import engine
+from database import engine, SessionLocal
 from models import Base
 
 # Importar routers
@@ -33,6 +34,54 @@ from monitoring.network_monitor import monitor
 
 # ==================== CONFIGURACIÓN DE FASTAPI ====================
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Eventos que se ejecutan al iniciar y cerrar la aplicación:
+    - Crear tablas en la BD
+    - Ejecutar seed si la BD está vacía
+    - Iniciar network monitor
+    """
+    logger.info("Starting MediStock API")
+    
+    try:
+        logger.info("Creating database tables if needed")
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database tables are ready")
+    except Exception:
+        logger.exception("Database initialization failed. API will continue in degraded mode.")
+    
+    try:
+        logger.info("Checking initial seed data")
+        # Solo seed si no hay usuarios
+        db = SessionLocal()
+        try:
+            from models import Usuario
+            count = db.query(Usuario).count()
+            if count == 0:
+                from seed import seed_database
+                seed_database()
+            else:
+                logger.info("Database already contains data, skipping seed")
+        finally:
+            db.close()
+    except Exception:
+        logger.exception("seed_database() failed. Startup will continue without seed data.")
+    
+    try:
+        logger.info("Starting network monitor task")
+        asyncio.create_task(monitor.start(intervalo=2.0))
+    except Exception:
+        logger.exception("Network monitor could not be started. API will continue without monitor task.")
+    
+    logger.info("MediStock API startup completed")
+    
+    yield
+    
+    # Shutdown
+    monitor.stop()
+    logger.info("MediStock API shutdown completed")
+
 app = FastAPI(
     title="MediStock API",
     description="Backend para sistema de búsqueda de medicamentos en farmacias",
@@ -40,6 +89,7 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
+    lifespan=lifespan,
 )
 
 # ==================== CORS ====================
@@ -141,48 +191,6 @@ def root():
             "health": "http://localhost:8000/health",
         },
     }
-
-
-# ==================== STARTUP ====================
-
-
-@app.on_event("startup")
-async def startup_event():
-    """
-    Eventos que se ejecutan al iniciar la aplicación:
-    - Crear tablas en la BD
-    - Ejecutar seed si la BD está vacía
-    - Imprimir mensajes de bienvenida
-    """
-    logger.info("Starting MediStock API")
-    
-    try:
-        logger.info("Creating database tables if needed")
-        Base.metadata.create_all(bind=engine)
-        logger.info("Database tables are ready")
-    except Exception:
-        logger.exception("Database initialization failed. API will continue in degraded mode.")
-    
-    try:
-        logger.info("Checking initial seed data")
-        seed_database()
-    except Exception:
-        logger.exception("seed_database() failed. Startup will continue without seed data.")
-    
-    try:
-        logger.info("Starting network monitor task")
-        asyncio.create_task(monitor.start(intervalo=2.0))
-    except Exception:
-        logger.exception("Network monitor could not be started. API will continue without monitor task.")
-    
-    logger.info("MediStock API startup completed")
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Eventos que se ejecutan al apagar la aplicación."""
-    monitor.stop()
-    print("\n🛑 MediStock API detenido")
 
 
 # ==================== ERROR HANDLERS ====================
