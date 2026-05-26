@@ -14,12 +14,14 @@ import AppointmentStatusBadge from '../components/turnos/AppointmentStatusBadge'
 import ConfirmationModal from '../components/turnos/ConfirmationModal';
 
 function formatFecha(fecha: string) {
+  if (!fecha) return '—';
   const [y, m, d] = fecha.split('-');
   const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
   return `${d} de ${meses[parseInt(m) - 1]} de ${y}`;
 }
 
 function formatHora(hora: string) {
+  if (!hora) return '—';
   return hora.slice(0, 5);
 }
 
@@ -99,6 +101,16 @@ export default function DetalleTurno() {
     }
   };
 
+  // Parse medicamentos from JSON string with error handling
+  let medicamentos = [];
+  try {
+    medicamentos = turno.medicamentos_json
+      ? JSON.parse(turno.medicamentos_json)
+      : [];
+  } catch {
+    medicamentos = [];
+  }
+
   const puedeCancel = turno.estado === 'Pendiente';
 
   return (
@@ -115,7 +127,7 @@ export default function DetalleTurno() {
           </button>
           <div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Detalle del Turno</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{turno.codigo}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{turno.codigo_turno}</p>
           </div>
         </div>
 
@@ -145,13 +157,13 @@ export default function DetalleTurno() {
                   Comprobante de Turno
                 </p>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-black">#{turno.numero_turno}</span>
+                  <span className="text-4xl font-black">#{turno.codigo_turno}</span>
                   <span className="text-sm font-semibold text-white/80">Turno</span>
                 </div>
               </div>
               <div className="text-right">
                 <AppointmentStatusBadge estado={turno.estado} />
-                <p className="text-xs text-white/70 mt-2 font-mono">{turno.codigo}</p>
+                <p className="text-xs text-white/70 mt-2 font-mono">{turno.codigo_turno}</p>
               </div>
             </div>
           </div>
@@ -161,15 +173,15 @@ export default function DetalleTurno() {
             {/* Farmacia */}
             <Section icon={<MapPin size={15} className="text-emerald-500" />} title="Farmacia">
               <p className="font-bold text-slate-800 dark:text-slate-200">
-                {turno.farmacia?.nombre ?? `Farmacia #${turno.farmacia_id}`}
+                {turno.sede?.nombre ?? `Sede #${turno.sede_id}`}
               </p>
-              {turno.farmacia && (
+              {turno.sede && (
                 <>
                   <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
-                    <MapPin size={10} /> {turno.farmacia.municipio} · {turno.farmacia.direccion}
+                    <MapPin size={10} /> {turno.sede.municipio} · {turno.sede.direccion}
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
-                    <Phone size={10} /> {turno.farmacia.telefono}
+                    <Phone size={10} /> {turno.sede.telefono ?? '—'}
                   </p>
                 </>
               )}
@@ -186,7 +198,7 @@ export default function DetalleTurno() {
               </Section>
               <Section icon={<Clock size={15} className="text-purple-500" />} title="Hora">
                 <p className="font-bold text-slate-800 dark:text-slate-200 text-sm">
-                  {formatHora(turno.hora)}
+                  {formatHora(turno.hora_inicio)}
                 </p>
               </Section>
             </div>
@@ -196,27 +208,22 @@ export default function DetalleTurno() {
             {/* EPS */}
             <Section icon={<Shield size={15} className="text-blue-500" />} title="EPS">
               <p className="font-bold text-slate-800 dark:text-slate-200">
-                {turno.eps_obj?.nombre ?? `EPS #${turno.eps_id}`}
+                {turno.eps_solicitante ?? '—'}
               </p>
             </Section>
 
             <Divider />
 
             {/* Medicamentos */}
-            <Section icon={<Pill size={15} className="text-amber-500" />} title={`Medicamentos (${turno.medicamentos.length})`}>
+            <Section icon={<Pill size={15} className="text-amber-500" />} title={`Medicamentos (${medicamentos.length})`}>
               <div className="space-y-2 mt-1">
-                {turno.medicamentos.map((tm) => (
-                  <div key={tm.id} className="flex items-center gap-2">
-                    <span className="text-lg">{tm.medicamento?.icono ?? '💊'}</span>
+                {medicamentos.map((tm: any, idx: number) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <span className="text-lg">{tm.icono ?? '💊'}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
-                        {tm.medicamento?.nombre ?? `Medicamento #${tm.medicamento_id}`}
+                        {tm.nombre ?? `Medicamento #${tm.medicamento_id}`}
                       </p>
-                      {tm.medicamento && (
-                        <p className="text-xs text-slate-400 dark:text-slate-500">
-                          {tm.medicamento.nombre_generico} · {tm.medicamento.laboratorio}
-                        </p>
-                      )}
                     </div>
                     <span className="text-xs font-bold text-slate-500 dark:text-slate-400 flex-shrink-0">
                       ×{tm.cantidad}
@@ -231,7 +238,7 @@ export default function DetalleTurno() {
             {/* Código */}
             <Section icon={<Hash size={15} className="text-slate-400" />} title="Código único">
               <p className="font-mono font-bold text-lg text-slate-800 dark:text-slate-200 tracking-widest">
-                {turno.codigo}
+                {turno.codigo_turno}
               </p>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
                 Presenta este código en la farmacia

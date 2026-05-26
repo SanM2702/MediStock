@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import Index, ForeignKey, String, Integer, Float, Boolean, DateTime, Numeric, Date, Time, Table, Column
+from sqlalchemy import Index, ForeignKey, String, Integer, Float, Boolean, DateTime, Numeric, Date, Time, Table, Column, Text
 from datetime import datetime, date, time
 from decimal import Decimal
 from typing import Optional, List
@@ -195,7 +195,8 @@ class EPS(Base):
     creado_en: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     # Relaciones
-    turnos: Mapped[List["Turno"]] = relationship("Turno", back_populates="eps_obj")
+    # Relaciones (Comentadas para evitar error de mapeo con nuevo Turno)
+    # turnos: Mapped[List["Turno"]] = relationship("Turno", back_populates="eps_obj")
 
     def __repr__(self):
         return f"<EPS(id={self.id}, nombre={self.nombre})>"
@@ -217,7 +218,7 @@ class HorarioDisponible(Base):
 
     # Relaciones
     farmacia: Mapped["Farmacia"] = relationship("Farmacia")
-    turnos: Mapped[List["Turno"]] = relationship("Turno", back_populates="horario")
+    # turnos: Mapped[List["Turno"]] = relationship("Turno", back_populates="horario")
 
     def __repr__(self):
         return (
@@ -226,64 +227,58 @@ class HorarioDisponible(Base):
         )
 
 
+# ==================== MÓDULO REDES Y TURNOS ACTUALIZADOS ====================
+
+class RedFarmaceutica(Base):
+    __tablename__ = "redes_farmaceuticas"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    nombre: Mapped[str] = mapped_column(String(100))
+    # audifarma, cruz_verde, colsubsidio, cafam, farmatodo
+    slug: Mapped[str] = mapped_column(String(50), unique=True)
+    logo_url: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    activo: Mapped[bool] = mapped_column(Boolean, default=True)
+    sedes: Mapped[List["SedeFarmaceutica"]] = relationship(back_populates="red")
+
+class SedeFarmaceutica(Base):
+    __tablename__ = "sedes_farmaceuticas"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    red_id: Mapped[int] = mapped_column(ForeignKey("redes_farmaceuticas.id"))
+    nombre: Mapped[str] = mapped_column(String(200))
+    municipio: Mapped[str] = mapped_column(String(100))
+    direccion: Mapped[str] = mapped_column(String(200))
+    telefono: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    horario_apertura: Mapped[str] = mapped_column(String(5))  # "07:00"
+    horario_cierre: Mapped[str] = mapped_column(String(5))   # "19:00"
+    atiende_sabado: Mapped[bool] = mapped_column(Boolean, default=True)
+    atiende_domingo: Mapped[bool] = mapped_column(Boolean, default=False)
+    horario_sabado_apertura: Mapped[Optional[str]] = mapped_column(String(5), nullable=True)
+    horario_sabado_cierre: Mapped[Optional[str]] = mapped_column(String(5), nullable=True)
+    activo: Mapped[bool] = mapped_column(Boolean, default=True)
+    red: Mapped["RedFarmaceutica"] = relationship(back_populates="sedes")
+    turnos: Mapped[List["Turno"]] = relationship(back_populates="sede")
+
+class EpsRedConvenio(Base):
+    __tablename__ = "eps_red_convenio"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    eps_nombre: Mapped[str] = mapped_column(String(100))
+    red_id: Mapped[int] = mapped_column(ForeignKey("redes_farmaceuticas.id"))
+    es_principal: Mapped[bool] = mapped_column(Boolean, default=True)
+
 class Turno(Base):
-    """Turno de atención agendado por un paciente en una farmacia"""
     __tablename__ = "turnos"
-
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    codigo: Mapped[str] = mapped_column(String(20), unique=True, index=True)
-    numero_turno: Mapped[int] = mapped_column(Integer, index=True)
-
-    # Relaciones principales
-    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id"), index=True)
-    farmacia_id: Mapped[int] = mapped_column(ForeignKey("farmacias.id"), index=True)
-    eps_id: Mapped[int] = mapped_column(ForeignKey("eps.id"), index=True)
-    horario_id: Mapped[int] = mapped_column(ForeignKey("horarios_disponibles.id"), index=True)
-
-    # Datos del turno
-    fecha: Mapped[date] = mapped_column(Date, index=True)
-    hora: Mapped[time] = mapped_column(Time)
-    estado: Mapped[str] = mapped_column(
-        String(20), default="Pendiente", index=True
-    )  # Pendiente, Confirmado, Cancelado, Completado
-    observaciones: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
-
-    # Auditoría
-    creado_en: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
-    actualizado_en: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
-
-    # Relaciones ORM
-    usuario: Mapped["Usuario"] = relationship("Usuario")
-    farmacia: Mapped["Farmacia"] = relationship("Farmacia")
-    eps_obj: Mapped["EPS"] = relationship("EPS", back_populates="turnos")
-    horario: Mapped["HorarioDisponible"] = relationship("HorarioDisponible", back_populates="turnos")
-    medicamentos: Mapped[List["TurnoMedicamento"]] = relationship(
-        "TurnoMedicamento",
-        back_populates="turno",
-        cascade="all, delete-orphan",
-    )
-
-    def __repr__(self):
-        return f"<Turno(id={self.id}, codigo={self.codigo}, estado={self.estado})>"
-
-
-class TurnoMedicamento(Base):
-    """Medicamentos asociados a un turno (con descuento temporal de stock)"""
-    __tablename__ = "turno_medicamentos"
-
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    turno_id: Mapped[int] = mapped_column(ForeignKey("turnos.id"), index=True)
-    medicamento_id: Mapped[int] = mapped_column(ForeignKey("medicamentos.id"), index=True)
-    cantidad: Mapped[int] = mapped_column(Integer, default=1)
-
-    # Relaciones ORM
-    turno: Mapped["Turno"] = relationship("Turno", back_populates="medicamentos")
-    medicamento: Mapped["Medicamento"] = relationship("Medicamento")
-
-    def __repr__(self):
-        return (
-            f"<TurnoMedicamento(turno_id={self.turno_id}, "
-            f"medicamento_id={self.medicamento_id}, cantidad={self.cantidad})>"
-        )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id"))
+    sede_id: Mapped[int] = mapped_column(ForeignKey("sedes_farmaceuticas.id"))
+    eps_solicitante: Mapped[str] = mapped_column(String(100))
+    numero_afiliado: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    fecha: Mapped[date] = mapped_column(Date)
+    hora_inicio: Mapped[str] = mapped_column(String(5))  # "09:00"
+    hora_fin: Mapped[str] = mapped_column(String(5))     # "09:15"
+    codigo_turno: Mapped[str] = mapped_column(String(20), unique=True)
+    estado: Mapped[str] = mapped_column(String(20), default="pendiente")
+    # pendiente, confirmado, cancelado, completado
+    medicamentos_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    notas: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    creado_en: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    usuario: Mapped["Usuario"] = relationship()
+    sede: Mapped["SedeFarmaceutica"] = relationship(back_populates="turnos")

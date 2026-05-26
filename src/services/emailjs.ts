@@ -12,6 +12,11 @@ const SERVICE_ID = 'service_4fkq7by';
 const TEMPLATE_ID_BIENVENIDA = 'template_jha15ik';
 const TEMPLATE_ID_RESTAURAR = 'template_qx9d5eg';
 
+// Credenciales específicas para confirmación de turnos
+const TEMPLATE_ID_TURNO = 'template_m2bb7df';
+const SERVICE_ID_TURNO = 'service_vk9bssa';
+const PUBLIC_KEY_TURNO = 'egsKXqOmbFl5tLqdP';
+
 // Inicializar EmailJS
 emailjs.init(PUBLIC_KEY);
 
@@ -171,6 +176,51 @@ export const sendTestEmail = async (testEmail: string): Promise<boolean> => {
   } catch (error: any) {
     console.error('✗ Error en correo de prueba:', error);
     throw new Error(`Error en prueba: ${error.message}`);
+  }
+};
+
+/**
+ * Enviar correo de confirmación de turno/cita
+ */
+export const sendTurnoConfirmationEmail = async (
+  email: string,
+  nombre: string,
+  codigoTurno: string,
+  sedeNombre: string,
+  direccionFarmacia: string,
+  fecha: string,
+  hora: string,
+  medicamentos: { nombre: string; cantidad: number }[]
+): Promise<boolean> => {
+  try {
+    // Obtener el primer medicamento o string vacío si no hay
+    const nombreMedicamento = medicamentos.length > 0 ? medicamentos[0].nombre : '';
+
+    const templateParams: MailParams = {
+      to_email: email,
+      nombre_paciente: nombre,
+      fecha_turno: fecha,
+      hora_turno: hora,
+      nombre_farmacia: sedeNombre,
+      direccion_farmacia: direccionFarmacia,
+      nombre_medicamento: nombreMedicamento,
+      codigo_confirmacion: codigoTurno
+    };
+
+    console.log('📧 Enviando correo de confirmación de turno:', { email, codigoTurno });
+
+    const response = await emailjs.send(
+      SERVICE_ID_TURNO,
+      TEMPLATE_ID_TURNO,
+      templateParams,
+      PUBLIC_KEY_TURNO
+    );
+
+    console.log('✓ Correo de confirmación enviado:', response);
+    return true;
+  } catch (error: any) {
+    console.error('✗ Error al enviar correo de confirmación de turno:', error);
+    return false;
   }
 };
 

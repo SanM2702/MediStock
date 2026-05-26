@@ -1,85 +1,74 @@
 // ─── Tipos del Módulo Audifarma — Agendamiento de Turnos ─────────────────
 
-export interface EPSTurno {
+export interface RedFarmaceutica {
   id: number;
   nombre: string;
-  codigo?: string;
+  slug: string;
+  logo_url?: string;
   activo: boolean;
-  creado_en: string;
 }
 
-export interface HorarioDisponible {
+export interface SedeFarmaceutica {
   id: number;
-  farmacia_id: number;
-  fecha: string;          // YYYY-MM-DD
-  hora_inicio: string;    // HH:MM:SS
-  hora_fin: string;       // HH:MM:SS
-  capacidad_maxima: number;
-  turnos_agendados: number;
+  red_id: number;
+  nombre: string;
+  municipio: string;
+  direccion: string;
+  telefono?: string;
+  horario_apertura: string;
+  horario_cierre: string;
+  atiende_sabado: boolean;
+  atiende_domingo: boolean;
+  horario_sabado_apertura?: string;
+  horario_sabado_cierre?: string;
   activo: boolean;
-  creado_en: string;
 }
 
-export interface TurnoMedicamento {
-  id: number;
-  medicamento_id: number;
-  cantidad: number;
-  medicamento?: {
-    id: number;
-    nombre: string;
-    nombre_generico: string;
-    laboratorio: string;
-    categoria: string;
-    precio: number;
-    unidad: string;
-    icono?: string;
-  };
+export interface SlotResponse {
+  hora: string;
+  disponible: boolean;
 }
 
 export type EstadoTurno = 'Pendiente' | 'Confirmado' | 'Cancelado' | 'Completado';
 
 export interface Turno {
   id: number;
-  codigo: string;
-  numero_turno: number;
   usuario_id: number;
-  farmacia_id: number;
-  eps_id: number;
-  horario_id: number;
+  sede_id: number;
+  eps_solicitante: string;
+  numero_afiliado?: string;
   fecha: string;          // YYYY-MM-DD
-  hora: string;           // HH:MM:SS
+  hora_inicio: string;    // HH:MM
+  hora_fin: string;       // HH:MM
+  codigo_turno: string;
   estado: EstadoTurno;
-  observaciones?: string;
+  medicamentos_json?: string; // JSON string conteniendo medicamentos [{medicamento_id, cantidad, nombre, icono}]
+  notas?: string;
   creado_en: string;
-  actualizado_en: string;
-  farmacia?: {
-    id: number;
-    nombre: string;
-    municipio: string;
-    direccion: string;
-    telefono: string;
-    horario_apertura: string;
-    horario_cierre: string;
-    eps_convenio?: string;
-  };
-  eps_obj?: EPSTurno;
-  medicamentos: TurnoMedicamento[];
+  sede?: SedeFarmaceutica;
 }
 
 export interface TurnoCreatePayload {
-  farmacia_id: number;
-  eps_id: number;
-  horario_id: number;
-  medicamentos: { medicamento_id: number; cantidad: number }[];
-  observaciones?: string;
+  sede_id: number;
+  eps_solicitante: string;
+  numero_afiliado?: string;
+  fecha: string;          // YYYY-MM-DD
+  hora_inicio: string;    // HH:MM
+  hora_fin: string;       // HH:MM
+  medicamentos?: { medicamento_id: number; cantidad: number; nombre: string; icono?: string }[];
+  notas?: string;
 }
 
 // Estado del wizard de agendamiento
 export interface WizardState {
   paso: 1 | 2 | 3 | 4 | 5;
-  farmacia_id: number | null;
-  eps_id: number | null;
+  eps_solicitante: string | null;
+  numero_afiliado: string;
+  red_id: number | null;
+  sede_id: number | null;
   medicamentos: { medicamento_id: number; cantidad: number; nombre: string; icono?: string }[];
   fecha: string | null;
-  horario_id: number | null;
+  hora_inicio: string | null;
+  hora_fin: string | null;
+  notas: string;
 }
