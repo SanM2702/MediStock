@@ -7,9 +7,11 @@ DATABASE_URL = os.getenv(
     "sqlite:///./medistock.db"  # fallback local
 )
 
-# PostgreSQL en Render viene como postgres:// pero SQLAlchemy necesita postgresql://
+# Corregir prefijos para SQLAlchemy con psycopg3
 if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
+elif DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
 # Configurar engine según el tipo de base de datos
 if DATABASE_URL.startswith("sqlite"):
